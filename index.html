@@ -1981,8 +1981,8 @@ async function loadData(){
     document.querySelectorAll('[id^="lu"]').forEach(el=>el.textContent=`Atualizado às ${now}`);
     document.getElementById('err1').style.display='none';
     // ⚠️ NÃO limpar filtros aqui — preservar estado do usuário
-    // Apenas re-renderizar com os dados novos e filtros atuais
-     updateP1(getVF());
+    // Aplicar ano vigente na primeira carga, depois preservar seleção atual
+    setYearFilter(yearFilter);
      updateP2(getTF());
      updateP3(getReqF());
   }catch(e){
@@ -1999,17 +1999,13 @@ document.getElementById('i-fQ')?.addEventListener('input',()=>updateP2(getTF()))
 ['r-fSp','r-fS','r-fSol'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>updateP3(getReqF())));
 document.getElementById('r-fQ')?.addEventListener('input',()=>updateP3(getReqF()));
 
-// Marcar botões do ano atual como active
+// Inicializar filtros de ano com o ano vigente
 (()=>{
   const curYear=String(new Date().getFullYear());
-  // Entregas mês a mês
-  const btn=document.getElementById('ybtn-'+curYear);
-  if(btn) btn.classList.add('active');
-  else document.getElementById('ybtn-all').classList.add('active');
   // Requisitos por período
   const rbtn=document.getElementById('rbtn-'+curYear);
   if(rbtn) rbtn.classList.add('active');
-  else document.getElementById('rbtn-all').classList.add('active');
+  else document.getElementById('rbtn-all')?.classList.add('active');
 })();
 
 loadData();

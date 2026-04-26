@@ -441,19 +441,26 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">demandas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-total" style="width:100%"></div></div>
     </div>
-    <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
-      <div class="kpi-icon">📦</div>
-      <div class="kpi-label">Backlog</div>
-      <div class="kpi-value" id="kv-backlog">—</div>
-      <div class="kpi-sub">em espera</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
-    </div>
     <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
       <div class="kpi-icon">⏳</div>
       <div class="kpi-label">Em Fila</div>
       <div class="kpi-value" id="kv-fila">—</div>
       <div class="kpi-sub">próximas a fazer</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
+    </div>
+    <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">Entregues</div>
+      <div class="kpi-value" id="kv-entregue">—</div>
+      <div class="kpi-sub">em produção</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
+    </div>
+    <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Backlog</div>
+      <div class="kpi-value" id="kv-backlog">—</div>
+      <div class="kpi-sub">em espera</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
     </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
@@ -468,13 +475,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-value" id="kv-teste">—</div>
       <div class="kpi-sub">validação</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-teste"></div></div>
-    </div>
-    <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
-      <div class="kpi-icon">✅</div>
-      <div class="kpi-label">Entregues</div>
-      <div class="kpi-value" id="kv-entregue">—</div>
-      <div class="kpi-sub">em produção</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
     </div>
     <div class="kpi-card kpi-rose" id="kv-c-suspensa" onclick="fKpi('viaveis','SUSPENSA')">
       <div class="kpi-icon">⏸️</div>
@@ -581,6 +581,30 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
+
+  <div class="table-card">
+    <div class="tcard-header">
+      <div>
+        <div class="tcard-title">Previsões / Entregas</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver todos os detalhes da demanda</div>
+      </div>
+      <span class="tcard-count" id="rc-prev"></span>
+    </div>
+    <div class="tw" style="max-height:320px;overflow-y:auto"><table>
+      <thead><tr>
+        <th onclick="srt('prev','Jira')">Jira <span class="si">↕</span></th>
+        <th>ID Contrato</th>
+        <th onclick="srt('prev','dem')">Demanda <span class="si">↕</span></th>
+        <th onclick="srt('prev','Status')">Status <span class="si">↕</span></th>
+        <th>Start Date</th>
+        <th>Prev. Dev</th>
+        <th>Entrega Dev</th>
+        <th>Prev. Prod</th>
+        <th>Entrega Prod</th>
+      </tr></thead>
+      <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
+    </table></div>
+  </div>
 
 </div>
 
@@ -913,15 +937,13 @@ function toggleTheme(){
 
 function setYearFilter(year){
   yearFilter=year;
+  chartFilter.month=null; // limpar filtro de mês ao trocar ano
   document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('ybtn-'+year).classList.add('active');
-  const colors=gc();
-  const data=getVF();
-  const entM=buildEntMes(data,year);
   const label=year==='all'?'Todos os anos':year;
   document.getElementById('entregasSub').textContent=`Entregas em produção — ${label} — valores exibidos sobre cada ponto`;
-  const color=year==='2025'?colors[1]:year==='2026'?colors[0]:colors[0];
-  rebuildEntregas(entM,color);
+  updateChartClearBtns();
+  updateP1(getVF()); // atualiza cards + todos os gráficos com dados filtrados por ano
 }
 
 function setReqYear(year){
@@ -1165,6 +1187,18 @@ function getVF(){
       if(chartFilter.naoPlan==='naoPlan'&&!np.includes('não planejado'))return false;
       const setorNP=chartFilter.naoPlan==='naoPlan'?'':chartFilter.naoPlan;
       if(setorNP&&!np.includes(setorNP.toLowerCase()))return false;
+    }
+    if(yearFilter&&yearFilter!=='all'){
+      const ep=r['Entrega em Produção']||'';
+      const sd=r['Start Date']||'';
+      // considera o ano pelo campo de entrega em produção OU start date
+      const matchYear=(dateStr)=>{
+        if(!dateStr)return false;
+        const p=dateStr.split('/');
+        if(p.length>=3){const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}
+        return false;
+      };
+      if(!matchYear(ep)&&!matchYear(sd))return false;
     }
     if(chartFilter.month!==null&&chartFilter.month!==undefined){
       const ep=r['Entrega em Produção']||'';
@@ -1493,7 +1527,9 @@ function updateP1(data){
   rebuildEntregas(entM,colors[yearFilter==='2025'?1:0]);
 
   const dk='Demanda / Tarefa / Projeto';
-  document.getElementById('rc-prev').textContent=`${data.length} itens`;
+  const mesLabel = chartFilter.month!==null&&chartFilter.month!==undefined ? ` — ${MESES_F[chartFilter.month]}` : '';
+  const anoLabel = yearFilter&&yearFilter!=='all' ? ` — ${yearFilter}` : '';
+  document.getElementById('rc-prev').textContent=`${data.length} itens${anoLabel}${mesLabel}`;
   _cachePrev=[];
   document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{
     const _ip=_cachePrev.push(r)-1;

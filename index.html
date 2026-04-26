@@ -500,7 +500,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row full">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Entregas Mês a Mês</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Entregas Mês a Mês</div><span class="chart-badge" id="tot-ent"></span></div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="chart-clear-btn" id="clr-month" onclick="clearChartType('month')" title="Limpar filtro de mês" style="display:none">✕ Limpar</button>
           <span style="font-size:11px;color:var(--text3);margin-right:4px">Ano:</span>
@@ -517,7 +517,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Demandas por Origem</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
         <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
@@ -525,7 +525,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Não Planejadas por Mês e Setor</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Não Planejadas por Mês e Setor</div><span class="chart-badge" id="tot-naoplan"></span></div>
         <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
@@ -536,7 +536,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Demandas na Esteira</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas na Esteira</div><span class="chart-badge" id="tot-esteira"></span></div>
         <button class="chart-clear-btn" id="clr-esteira" onclick="clearChartType('status')" title="Limpar filtro de status" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
@@ -1351,7 +1351,7 @@ function updateP1(data){
 
    // Fila, Backlog, Dev, Teste, Suspensas: sempre de TODAS as demandas, sem filtro de ano
    const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
-   const nEnt=data.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;
+   const nEnt=allData.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;
    const nBacklog=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
    const nDev=allData.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
    const nTeste=allData.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
@@ -1397,6 +1397,7 @@ function updateP1(data){
 
   // ===== GRÁFICO: ORIGEM =====
   const origMap={};data.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
+  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+data.length;
   const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
   const origBg=origL.map((l,i)=>{
     if(chartFilter.origem&&chartFilter.origem===l)return colors[i%colors.length]+'EE';
@@ -1416,6 +1417,7 @@ function updateP1(data){
 
   // ===== GRÁFICO: NÃO PLANEJADAS POR MÊS E SETOR =====
   const naoPlanData=data.filter(r=>(r['Ordem de Desenvolv.']||'').toLowerCase().includes('n\u00e3o planejado'));
+  const elTotNP=document.getElementById('tot-naoplan');if(elTotNP)elTotNP.textContent='Total: '+naoPlanData.length;
   const setores={};
   naoPlanData.forEach(r=>{
     const ordem=r['Ordem de Desenvolv.']||'';
@@ -1455,6 +1457,7 @@ function updateP1(data){
   }
 
   const sMap={};data.forEach(r=>{const s=r['Status']||'Sem status';sMap[s]=(sMap[s]||0)+1;});
+  const elTotEst=document.getElementById('tot-esteira');if(elTotEst)elTotEst.textContent='Total: '+data.length;
   const sL=Object.keys(sMap).sort((a,b)=>sMap[b]-sMap[a]);
   if(ch.est)ch.est.destroy();
   const esBgColors=sL.map((l,i)=>{
@@ -1511,6 +1514,9 @@ function updateP1(data){
   });
 
   const entM=buildEntMes(data,yearFilter);
+  const totEnt=entM.reduce((a,b)=>a+b,0);
+  const elTotEnt=document.getElementById('tot-ent');
+  if(elTotEnt)elTotEnt.textContent=totEnt?`Total: ${totEnt}`:'';
   rebuildEntregas(entM,colors[yearFilter==='2025'?1:0]);
 
   const dk='Demanda / Tarefa / Projeto';

@@ -1149,7 +1149,7 @@ function getVF(ignoreYear){
       if(kpi==='fila'&&!u.includes('FAZER'))return false;
       if(kpi==='entregue'&&!u.includes('FEITO')&&!u.includes('PRODU')&&!u.includes('DONE'))return false;
       if(kpi==='backlog'&&!u.includes('BACKLOG'))return false;
-      if(kpi!=='fila'&&kpi!=='entregue'&&!u.includes(kpi))return false;
+      if(kpi!=='fila'&&kpi!=='entregue'&&kpi!=='backlog'&&!u.includes(kpi.toUpperCase()))return false;
     }
     // Filtros dos gráficos interativos
     if(chartFilter.status&&r['Status']!==chartFilter.status)return false;

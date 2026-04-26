@@ -1345,29 +1345,80 @@ function openPipefyModal(c){
 
 // ===== PAGE 1 =====
 function updateP1(data){
-   // KPIs refletem os dados filtrados pelos gráficos
+   // KPIs: Total e Entregues refletem o ANO selecionado (data já filtrado por ano)
+   // Demais cards (Fila, Backlog, Dev, Teste, Suspensas) refletem TODOS os anos
+   // mas respeitam os demais filtros ativos (status, sprint, origem, etc.)
    const total=data.length;
    const totalAll=allData.length;
-   const nFila=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
+
+   // Dados sem filtro de ano para os demais cards (mantém outros filtros ativos)
+   const dataAllYears=allData.filter(r=>{
+     const fS=document.getElementById('v-fS').value,fSol=document.getElementById('v-fSol').value;
+     const fSp=document.getElementById('v-fSp').value,fD=document.getElementById('v-fD').value;
+     const fA=document.getElementById('v-fA').value,fQ=document.getElementById('v-fQ').value.toLowerCase();
+     const kpi=KF.viaveis;
+     if(fS&&r['Status']!==fS)return false;
+     if(fSol&&r['Solicitante']!==fSol)return false;
+     if(fSp&&r['Sprint']!==fSp)return false;
+     if(fD&&r['Dev Resp.']!==fD)return false;
+     if(fA&&r['Backlog']!==fA)return false;
+     if(fQ){const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['Dev Resp.'],r['ID Contrato'],r['Classificação'],r['Origem']].join(' ').toLowerCase();if(!h.includes(fQ))return false;}
+     if(kpi){
+       const u=(r['Status']||'').toUpperCase();
+       if(kpi==='fila'&&!u.includes('FAZER'))return false;
+       if(kpi==='entregue'&&!u.includes('FEITO')&&!u.includes('PRODU')&&!u.includes('DONE'))return false;
+       if(kpi==='backlog'&&!u.includes('BACKLOG'))return false;
+       if(kpi!=='fila'&&kpi!=='entregue'&&!u.includes(kpi))return false;
+     }
+     if(chartFilter.status&&r['Status']!==chartFilter.status)return false;
+     if(chartFilter.sprint){const sp=r['Sprint']||'À Definir';if(sp!==chartFilter.sprint)return false;}
+     if(chartFilter.origem&&(r['Origem']||'')!==chartFilter.origem)return false;
+     if(chartFilter.naoPlan!==null&&chartFilter.naoPlan!==undefined){
+       const np=(r['Ordem de Desenvolv.']||'').toLowerCase();
+       if(chartFilter.naoPlan==='naoPlan'&&!np.includes('não planejado'))return false;
+       const setorNP=chartFilter.naoPlan==='naoPlan'?'':chartFilter.naoPlan;
+       if(setorNP&&!np.includes(setorNP.toLowerCase()))return false;
+     }
+     // Sem filtro de ano aqui — propositalmente
+     if(chartFilter.month!==null&&chartFilter.month!==undefined){
+       const ep=r['Entrega em Produção']||'';
+       if(!ep||ep.toLowerCase().includes('definir'))return false;
+       const p=ep.split('/');
+       if(p.length<2)return false;
+       const m=parseInt(p[1])-1;
+       if(m!==chartFilter.month)return false;
+     }
+     return true;
+   });
+
+   const nFila=dataAllYears.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nEnt=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE');}).length;
-   const nBacklog=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
-   const nDev=data.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
-   const nTeste=data.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
-   const nSus=data.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
+   const nBacklog=dataAllYears.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
+   const nDev=dataAllYears.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
+   const nTeste=dataAllYears.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
+   const nSus=dataAllYears.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
+
+   // Label do ano para Total e Entregues
+   const anoSuffix=yearFilter&&yearFilter!=='all'?' ('+yearFilter+')':'';
    document.getElementById('kv-total').textContent=total+(total!==totalAll?' /'+totalAll:'');
+   document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix;
    document.getElementById('kv-fila').textContent=nFila;
    document.getElementById('kv-entregue').textContent=nEnt;
+   document.getElementById('kv-entregue').closest('.kpi-card').querySelector('.kpi-sub').textContent='em produção'+anoSuffix;
    document.getElementById('kv-backlog').textContent=nBacklog;
    document.getElementById('kv-dev').textContent=nDev;
    document.getElementById('kv-teste').textContent=nTeste;
    document.getElementById('kv-suspensa').textContent=nSus;
+   const refBase=dataAllYears.length||1;
    if(total>0){
-     document.getElementById('kv-bar-fila').style.width=Math.round(nFila/total*100)+'%';
      document.getElementById('kv-bar-entregue').style.width=Math.round(nEnt/total*100)+'%';
-     document.getElementById('kv-bar-backlog').style.cssText=`width:${Math.round(nBacklog/total*100)}%;background:var(--c-teal)`;
-     document.getElementById('kv-bar-dev').style.width=Math.round(nDev/total*100)+'%';
-     document.getElementById('kv-bar-teste').style.width=Math.round(nTeste/total*100)+'%';
-     document.getElementById('kv-bar-suspensa').style.width=Math.round(nSus/total*100)+'%';
+   }
+   if(refBase>0){
+     document.getElementById('kv-bar-fila').style.width=Math.round(nFila/refBase*100)+'%';
+     document.getElementById('kv-bar-backlog').style.cssText=`width:${Math.round(nBacklog/refBase*100)}%;background:var(--c-teal)`;
+     document.getElementById('kv-bar-dev').style.width=Math.round(nDev/refBase*100)+'%';
+     document.getElementById('kv-bar-teste').style.width=Math.round(nTeste/refBase*100)+'%';
+     document.getElementById('kv-bar-suspensa').style.width=Math.round(nSus/refBase*100)+'%';
    }
    // Destacar KPI card ativo
    ['kv-c-total','kv-c-fila','kv-c-entregue','kv-c-backlog','kv-c-dev','kv-c-teste','kv-c-suspensa'].forEach(id=>document.getElementById(id)?.classList.remove('kpi-active'));

@@ -441,30 +441,23 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">demandas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-total" style="width:100%"></div></div>
     </div>
-    <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
-      <div class="kpi-icon">⏳</div>
-      <div class="kpi-label">Em Fila</div>
-      <div class="kpi-value" id="kv-fila">—</div>
-      <div class="kpi-sub">a fazer + suspensas</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
-    </div>
-    <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
-      <div class="kpi-icon">✅</div>
-      <div class="kpi-label">Entregues</div>
-      <div class="kpi-value" id="kv-entregue">—</div>
-      <div class="kpi-sub">em produção</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
-    </div>
     <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
       <div class="kpi-icon">📦</div>
       <div class="kpi-label">Backlog</div>
       <div class="kpi-value" id="kv-backlog">—</div>
-      <div class="kpi-sub">em fila</div>
+      <div class="kpi-sub">em espera</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
+    </div>
+    <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
+      <div class="kpi-icon">⏳</div>
+      <div class="kpi-label">Em Fila</div>
+      <div class="kpi-value" id="kv-fila">—</div>
+      <div class="kpi-sub">próximas a fazer</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
     </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
-      <div class="kpi-label">Em Desenvolv.</div>
+      <div class="kpi-label">Em Desenvolvimento</div>
       <div class="kpi-value" id="kv-dev">—</div>
       <div class="kpi-sub">em andamento</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-dev"></div></div>
@@ -475,6 +468,13 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-value" id="kv-teste">—</div>
       <div class="kpi-sub">validação</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-teste"></div></div>
+    </div>
+    <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">Entregues</div>
+      <div class="kpi-value" id="kv-entregue">—</div>
+      <div class="kpi-sub">em produção</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
     </div>
     <div class="kpi-card kpi-rose" id="kv-c-suspensa" onclick="fKpi('viaveis','SUSPENSA')">
       <div class="kpi-icon">⏸️</div>
@@ -1121,7 +1121,7 @@ function fKpi(page,val){
   KF[page]=val;
   const fp=document.getElementById('fp-'+page[0]);
   const ft=document.getElementById('fp-'+page[0]+'-txt');
-  if(val){fp.classList.add('show');ft.textContent='Filtro: '+(val==='fila'?'Em Fila (A Fazer+Suspensas)':val==='entregue'?'Entregues':val);}
+  if(val){fp.classList.add('show');ft.textContent='Filtro: '+(val==='fila'?'Em Fila (A Fazer)':val==='entregue'?'Entregues':val);}
   else fp.classList.remove('show');
   if(page==='viaveis'){
     // Ao usar KPI, limpar apenas chartFilter de status/sprint (não month)
@@ -1151,7 +1151,7 @@ function getVF(){
     if(fQ){const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['Dev Resp.'],r['ID Contrato'],r['Classificação'],r['Origem']].join(' ').toLowerCase();if(!h.includes(fQ))return false;}
     if(kpi){
       const u=(r['Status']||'').toUpperCase();
-      if(kpi==='fila'&&!u.includes('FAZER')&&!u.includes('SUSPENSA'))return false;
+      if(kpi==='fila'&&!u.includes('FAZER'))return false;
       if(kpi==='entregue'&&!u.includes('FEITO')&&!u.includes('PRODU')&&!u.includes('DONE'))return false;
       if(kpi==='backlog'&&!u.includes('BACKLOG'))return false;
       if(kpi!=='fila'&&kpi!=='entregue'&&!u.includes(kpi))return false;
@@ -1337,7 +1337,7 @@ function updateP1(data){
    // KPIs refletem os dados filtrados pelos gráficos
    const total=data.length;
    const totalAll=allData.length;
-   const nFila=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')||u.includes('SUSPENSA');}).length;
+   const nFila=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nEnt=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE');}).length;
    const nBacklog=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
    const nDev=data.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;

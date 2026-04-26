@@ -1121,20 +1121,18 @@ function fKpi(page,val){
   if(val){fp.classList.add('show');ft.textContent='Filtro: '+(val==='fila'?'Em Fila (A Fazer)':val==='entregue'?'Entregues':val);}
   else fp.classList.remove('show');
   if(page==='viaveis'){
-    // Ao usar KPI, limpar apenas chartFilter de status/sprint (não month)
     chartFilter.status='';chartFilter.sprint='';
-    // Atualizar pill de gráfico
-    const pill=document.getElementById('fp-chart');
-    const txt=document.getElementById('fp-chart-txt');
     updateChartFilterPill();
     updateChartClearBtns();
     _rowCache=[];
-    updateP1(getVF());
+    // Cards que NÃO dependem do ano (fila, backlog, dev, teste, suspensa): ignorar yearFilter nos gráficos
+    const ignoreYear = val && val!=='entregue';
+    updateP1(getVF(ignoreYear));
   } else updateP2(getTF());
 }
 
 // Filters
-function getVF(){
+function getVF(ignoreYear){
   const fS=document.getElementById('v-fS').value,fSol=document.getElementById('v-fSol').value;
   const fSp=document.getElementById('v-fSp').value,fD=document.getElementById('v-fD').value;
   const fA=document.getElementById('v-fA').value,fQ=document.getElementById('v-fQ').value.toLowerCase();
@@ -1163,7 +1161,7 @@ function getVF(){
       const setorNP=chartFilter.naoPlan==='naoPlan'?'':chartFilter.naoPlan;
       if(setorNP&&!np.includes(setorNP.toLowerCase()))return false;
     }
-    if(yearFilter&&yearFilter!=='all'){
+    if(!ignoreYear && yearFilter&&yearFilter!=='all'){
       const ep=r['Entrega em Produção']||'';
       const sd=r['Start Date']||'';
       const matchYear=(dateStr)=>{

@@ -1384,7 +1384,7 @@ function updateP1(data){
   const colors=gc();
 
   // ===== GRÁFICO: ORIGEM =====
-  const origMap={};allData.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
+  const origMap={};data.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
   const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
   const origBg=origL.map((l,i)=>{
     if(chartFilter.origem&&chartFilter.origem===l)return colors[i%colors.length]+'EE';
@@ -1403,7 +1403,7 @@ function updateP1(data){
   });
 
   // ===== GRÁFICO: NÃO PLANEJADAS POR MÊS E SETOR =====
-  const naoPlanData=allData.filter(r=>(r['Ordem de Desenvolv.']||'').toLowerCase().includes('n\u00e3o planejado'));
+  const naoPlanData=data.filter(r=>(r['Ordem de Desenvolv.']||'').toLowerCase().includes('n\u00e3o planejado'));
   const setores={};
   naoPlanData.forEach(r=>{
     const ordem=r['Ordem de Desenvolv.']||'';

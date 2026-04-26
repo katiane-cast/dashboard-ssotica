@@ -1166,14 +1166,16 @@ function getVF(){
     if(yearFilter&&yearFilter!=='all'){
       const ep=r['Entrega em Produção']||'';
       const sd=r['Start Date']||'';
-      // considera o ano pelo campo de entrega em produção OU start date
       const matchYear=(dateStr)=>{
         if(!dateStr)return false;
         const p=dateStr.split('/');
         if(p.length>=3){const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}
         return false;
       };
-      if(!matchYear(ep)&&!matchYear(sd))return false;
+      // Só filtra por ano se tiver pelo menos uma data preenchida
+      // Demandas sem data (A FAZER, BACKLOG, etc.) sempre aparecem
+      const temData=ep||sd;
+      if(temData&&!matchYear(ep)&&!matchYear(sd))return false;
     }
     if(chartFilter.month!==null&&chartFilter.month!==undefined){
       const ep=r['Entrega em Produção']||'';

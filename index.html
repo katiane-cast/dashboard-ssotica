@@ -1351,7 +1351,7 @@ function updateP1(data){
 
    // Fila, Backlog, Dev, Teste, Suspensas: sempre de TODAS as demandas, sem filtro de ano
    const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
-   const nEnt=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE');}).length;
+   const nEnt=data.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;
    const nBacklog=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
    const nDev=allData.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
    const nTeste=allData.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;

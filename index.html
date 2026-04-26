@@ -455,9 +455,16 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">em produção</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
     </div>
+    <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Backlog</div>
+      <div class="kpi-value" id="kv-backlog">—</div>
+      <div class="kpi-sub">em fila</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
+    </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
-      <div class="kpi-label">Em Dev</div>
+      <div class="kpi-label">Em Desenvolv.</div>
       <div class="kpi-value" id="kv-dev">—</div>
       <div class="kpi-sub">em andamento</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-dev"></div></div>
@@ -488,29 +495,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="fg"><div class="fl">Sprint</div><select id="v-fSp"><option value="">Todos</option></select></div>
     <div class="fg"><div class="fl">Dev Resp.</div><select id="v-fD"><option value="">Todos</option></select></div>
     <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="v-fQ" placeholder="Demanda, Jira, solicitante, ID contrato..."></div>
-  </div>
-
-  <div class="charts-row">
-    <div class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">Demandas na Esteira</div>
-        <button class="chart-clear-btn" id="clr-esteira" onclick="clearChartType('status')" title="Limpar filtro de status" style="display:none">✕ Limpar</button>
-      </div>
-      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cEsteira" role="img" aria-label="Demandas por status"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">Demandas por Sprint</div>
-        <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
-      </div>
-      <div class="chart-sub">Distribuição por sprint · clique numa fatia para filtrar</div>
-      <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
-      <div class="hint-box">
-        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
-        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
-      </div>
-    </div>
   </div>
 
   <div class="charts-row full">
@@ -544,14 +528,60 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>ID Contrato</th>
         <th onclick="srt('prev','dem')">Demanda <span class="si">↕</span></th>
         <th onclick="srt('prev','Status')">Status <span class="si">↕</span></th>
-        <th>Prev. Dev</th><th>Prev. Prod</th><th>Entrega Prod</th>
+        <th>Start Date</th>
+        <th>Prev. Dev</th>
+        <th>Entrega Dev</th>
+        <th>Prev. Prod</th>
+        <th>Entrega Prod</th>
       </tr></thead>
       <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
   </div>
 
 </div>
+<div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Demandas por Origem</div>
+        <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Não Planejadas por Mês e Setor</div>
+        <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cNaoPlan" role="img" aria-label="Não planejadas por mês e setor"></canvas></div>
+    </div>
+  </div>
 
+<div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Demandas na Esteira</div>
+        <button class="chart-clear-btn" id="clr-esteira" onclick="clearChartType('status')" title="Limpar filtro de status" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cEsteira" role="img" aria-label="Demandas por status"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Demandas por Sprint</div>
+        <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por sprint · clique numa fatia para filtrar</div>
+      <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
+      <div class="hint-box">
+        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
+        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
+      </div>
+    </div>
+  </div>
+
+  
 <!-- ===== PAGE 2: INVIÁVEIS ===== -->
 <div id="page-inviaveis" class="page">
   <div class="topbar">
@@ -796,7 +826,7 @@ let SS={prev:{c:'',a:true},det:{c:'',a:true},req:{c:'',a:true}};
 let KF={viaveis:'',inviaveis:''};
 let yearFilter=String(new Date().getFullYear());
 let reqYearFilter=String(new Date().getFullYear());
-let chartFilter={status:'',sprint:'',month:null}; // filtro ativo pelos gráficos
+let chartFilter={status:'',sprint:'',month:null,origem:'',naoPlan:null}; // filtro ativo pelos gráficos
 
 function applyChartFilter(type, value){
   // Toggle: clicar no mesmo valor limpa o filtro
@@ -814,7 +844,7 @@ function applyChartFilter(type, value){
 }
 
 function clearChartFilter(){
-  chartFilter={status:'',sprint:'',month:null};
+  chartFilter={status:'',sprint:'',month:null,origem:'',naoPlan:null};
   document.getElementById('fp-chart').classList.remove('show');
   updateChartClearBtns();
   _rowCache=[];
@@ -822,7 +852,7 @@ function clearChartFilter(){
 }
 
 function clearChartType(type){
-  if(type==='month') chartFilter.month=null;
+  if(type==='month'||type==='naoPlan') chartFilter[type]=null;
   else chartFilter[type]='';
   updateChartFilterPill();
   updateChartClearBtns();
@@ -834,9 +864,13 @@ function updateChartClearBtns(){
   const clrE=document.getElementById('clr-esteira');
   const clrS=document.getElementById('clr-sprint');
   const clrM=document.getElementById('clr-month');
+  const clrO=document.getElementById('clr-origem');
+  const clrNP=document.getElementById('clr-nao-plan');
   if(clrE) clrE.style.display=chartFilter.status?'inline-flex':'none';
   if(clrS) clrS.style.display=chartFilter.sprint?'inline-flex':'none';
   if(clrM) clrM.style.display=(chartFilter.month!==null&&chartFilter.month!==undefined)?'inline-flex':'none';
+  if(clrO) clrO.style.display=chartFilter.origem?'inline-flex':'none';
+  if(clrNP) clrNP.style.display=(chartFilter.naoPlan!==null&&chartFilter.naoPlan!==undefined)?'inline-flex':'none';
 }
 
 function updateChartFilterPill(){
@@ -846,6 +880,8 @@ function updateChartFilterPill(){
   if(chartFilter.status) parts.push('Status: '+chartFilter.status);
   if(chartFilter.sprint) parts.push('Sprint: '+chartFilter.sprint);
   if(chartFilter.month!==null&&chartFilter.month!==undefined) parts.push('Mês: '+MESES_F[chartFilter.month]);
+  if(chartFilter.origem) parts.push('Origem: '+chartFilter.origem);
+  if(chartFilter.naoPlan!==null&&chartFilter.naoPlan!==undefined) parts.push('Não Planejado: '+(chartFilter.naoPlan==='naoPlan'?'Todos':chartFilter.naoPlan));
   if(parts.length){pill.classList.add('show');txt.textContent='Filtro ativo — '+parts.join(' · ');}
   else pill.classList.remove('show');
 }
@@ -1114,12 +1150,20 @@ function getVF(){
     if(kpi){
       const u=(r['Status']||'').toUpperCase();
       if(kpi==='fila'&&!u.includes('FAZER')&&!u.includes('SUSPENSA'))return false;
-      if(kpi==='entregue'&&!u.includes('FEITO')&&!u.includes('PRODU')&&!u.includes('DONE')&&!u.includes('BACKLOG'))return false;
+      if(kpi==='entregue'&&!u.includes('FEITO')&&!u.includes('PRODU')&&!u.includes('DONE'))return false;
+      if(kpi==='backlog'&&!u.includes('BACKLOG'))return false;
       if(kpi!=='fila'&&kpi!=='entregue'&&!u.includes(kpi))return false;
     }
     // Filtros dos gráficos interativos
     if(chartFilter.status&&r['Status']!==chartFilter.status)return false;
     if(chartFilter.sprint){const sp=r['Sprint']||'À Definir';if(sp!==chartFilter.sprint)return false;}
+    if(chartFilter.origem&&(r['Origem']||'')!==chartFilter.origem)return false;
+    if(chartFilter.naoPlan!==null&&chartFilter.naoPlan!==undefined){
+      const np=(r['Ordem de Desenvolv.']||'').toLowerCase();
+      if(chartFilter.naoPlan==='naoPlan'&&!np.includes('não planejado'))return false;
+      const setorNP=chartFilter.naoPlan==='naoPlan'?'':chartFilter.naoPlan;
+      if(setorNP&&!np.includes(setorNP.toLowerCase()))return false;
+    }
     if(chartFilter.month!==null&&chartFilter.month!==undefined){
       const ep=r['Entrega em Produção']||'';
       if(!ep||ep.toLowerCase().includes('definir'))return false;
@@ -1179,8 +1223,8 @@ function openModal(data,type){
       <div class="mf"><div class="mf-l">Previsão Produção</div><div class="mf-v">${data['Previsão Produção']||'—'}</div></div>
       <div class="mf"><div class="mf-l">Entrega em Produção</div><div class="mf-v">${data['Entrega em Produção']||'—'}</div></div>
     </div>
-    <div class="ms"><div class="ms-t">Sugestão de Melhoria</div><div class="ms-c">${data['Registre a sugestão de melhoria']||'Sem dados'}</div></div>
-    <div class="ms"><div class="ms-t">Como isso afeta o uso do sistema?</div><div class="ms-c">${data['Como isso afeta o uso do sistema?']||'Sem dados'}</div></div>
+    <div class="ms"><div class="ms-t">Sugestão de Melhoria</div><div class="ms-c">${(()=>{let v=data['Registre a sugestão de melhoria']||'';if(!v){const t=allTriagem.find(r=>(r['Jira']&&r['Jira']===data['Jira'])||(r['ID']&&r['ID']===data['ID Contrato'])||(r['Código Pipe']&&r['Código Pipe']===data['Código Pipe']));if(t)v=t['Registre a sugestão de melhoria']||'';}return v||'Sem dados';})()}</div></div>
+    <div class="ms"><div class="ms-t">Como isso afeta o uso do sistema?</div><div class="ms-c">${(()=>{let v=data['Como isso afeta o uso do sistema?']||'';if(!v){const t=allTriagem.find(r=>(r['Jira']&&r['Jira']===data['Jira'])||(r['ID']&&r['ID']===data['ID Contrato']));if(t)v=t['Como isso afeta o uso do sistema?']||'';}return v||'Sem dados';})()}</div></div>
     ${data['Requisito']?`<div class="ms"><div class="ms-t">Requisito</div><div class="ms-c">${data['Requisito']}</div></div>`:''}
     ${data['Origem']?`<div class="ms"><div class="ms-t">Origem</div><div class="ms-c">${data['Origem']}</div></div>`:''}`;
   } else {
@@ -1292,25 +1336,28 @@ function updateP1(data){
    const total=data.length;
    const totalAll=allData.length;
    const nFila=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')||u.includes('SUSPENSA');}).length;
-   const nEnt=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE')||u.includes('BACKLOG');}).length;
+   const nEnt=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE');}).length;
+   const nBacklog=data.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
    const nDev=data.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
    const nTeste=data.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
    const nSus=data.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
    document.getElementById('kv-total').textContent=total+(total!==totalAll?' /'+totalAll:'');
    document.getElementById('kv-fila').textContent=nFila;
    document.getElementById('kv-entregue').textContent=nEnt;
+   document.getElementById('kv-backlog').textContent=nBacklog;
    document.getElementById('kv-dev').textContent=nDev;
    document.getElementById('kv-teste').textContent=nTeste;
    document.getElementById('kv-suspensa').textContent=nSus;
    if(total>0){
      document.getElementById('kv-bar-fila').style.width=Math.round(nFila/total*100)+'%';
      document.getElementById('kv-bar-entregue').style.width=Math.round(nEnt/total*100)+'%';
+     document.getElementById('kv-bar-backlog').style.cssText=`width:${Math.round(nBacklog/total*100)}%;background:var(--c-teal)`;
      document.getElementById('kv-bar-dev').style.width=Math.round(nDev/total*100)+'%';
      document.getElementById('kv-bar-teste').style.width=Math.round(nTeste/total*100)+'%';
      document.getElementById('kv-bar-suspensa').style.width=Math.round(nSus/total*100)+'%';
    }
    // Destacar KPI card ativo
-   ['kv-c-total','kv-c-fila','kv-c-entregue','kv-c-dev','kv-c-teste','kv-c-suspensa'].forEach(id=>document.getElementById(id)?.classList.remove('kpi-active'));
+   ['kv-c-total','kv-c-fila','kv-c-entregue','kv-c-backlog','kv-c-dev','kv-c-teste','kv-c-suspensa'].forEach(id=>document.getElementById(id)?.classList.remove('kpi-active'));
    if(chartFilter.status){
      const u=chartFilter.status.toUpperCase();
      if(u.includes('DESENVOLVIMENTO'))document.getElementById('kv-c-dev')?.classList.add('kpi-active');
@@ -1321,8 +1368,69 @@ function updateP1(data){
    }
    if(KF.viaveis==='fila')document.getElementById('kv-c-fila')?.classList.add('kpi-active');
    if(KF.viaveis==='entregue')document.getElementById('kv-c-entregue')?.classList.add('kpi-active');
+   if(KF.viaveis==='backlog')document.getElementById('kv-c-backlog')?.classList.add('kpi-active');
 
   const colors=gc();
+
+  // ===== GRÁFICO: ORIGEM =====
+  const origMap={};allData.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
+  const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
+  const origBg=origL.map((l,i)=>{
+    if(chartFilter.origem&&chartFilter.origem===l)return colors[i%colors.length]+'EE';
+    if(chartFilter.origem&&chartFilter.origem!==l)return colors[i%colors.length]+'22';
+    return colors[i%colors.length]+'66';
+  });
+  if(ch.orig)ch.orig.destroy();
+  ch.orig=new Chart(document.getElementById('cOrigem'),{
+    type:'bar',
+    data:{labels:origL,datasets:[{data:origL.map(l=>origMap[l]),backgroundColor:origBg,borderColor:origL.map((_,i)=>colors[i%colors.length]),borderWidth:origL.map(l=>chartFilter.origem===l?3:1.5),borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.parsed.x} demandas${chartFilter.origem===origL[ctx.dataIndex]?' \u2713 filtro ativo':' (clique)'}`}}},
+      onClick(evt,els){if(!els.length)return;const lbl=origL[els[0].index];chartFilter.origem=chartFilter.origem===lbl?'':lbl;KF.viaveis='';document.getElementById('fp-v').classList.remove('show');updateChartFilterPill();updateChartClearBtns();_rowCache=[];updateP1(getVF());},
+      scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+    },plugins:[numPlugin]
+  });
+
+  // ===== GRÁFICO: NÃO PLANEJADAS POR MÊS E SETOR =====
+  const naoPlanData=allData.filter(r=>(r['Ordem de Desenvolv.']||'').toLowerCase().includes('n\u00e3o planejado'));
+  const setores={};
+  naoPlanData.forEach(r=>{
+    const ordem=r['Ordem de Desenvolv.']||'';
+    const setor=ordem.replace(/N[aã]o Planejado\s*-?\s*/i,'').trim()||'Outros';
+    const sd=r['Start Date']||'';
+    let mesIdx=-1;
+    if(sd){const pts=sd.split('/');if(pts.length>=2)mesIdx=parseInt(pts[1])-1;}
+    if(mesIdx<0||mesIdx>11)return;
+    if(!setores[setor])setores[setor]=Array(12).fill(0);
+    setores[setor][mesIdx]++;
+  });
+  const setorKeys=Object.keys(setores).sort((a,b)=>setores[b].reduce((s,v)=>s+v,0)-setores[a].reduce((s,v)=>s+v,0)).slice(0,6);
+  if(ch.npl)ch.npl.destroy();
+  if(setorKeys.length>0){
+    ch.npl=new Chart(document.getElementById('cNaoPlan'),{
+      type:'bar',
+      data:{
+        labels:MESES_F.map(m=>m.substring(0,3)),
+        datasets:setorKeys.map((s,si)=>({
+          label:s,data:setores[s],
+          backgroundColor:colors[si%colors.length]+(chartFilter.naoPlan&&chartFilter.naoPlan!==s?'33':'88'),
+          borderColor:colors[si%colors.length],borderWidth:chartFilter.naoPlan===s?2:1,borderRadius:3,stack:'np'
+        }))
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'right',labels:{font:{size:10},color:gt(),boxWidth:10,padding:6}},tooltip:{mode:'index',intersect:false}},
+        onClick(evt,els){
+          if(!els.length)return;
+          const ds=setorKeys[els[0].datasetIndex];
+          chartFilter.naoPlan=chartFilter.naoPlan===ds?null:ds;
+          KF.viaveis='';document.getElementById('fp-v').classList.remove('show');
+          updateChartFilterPill();updateChartClearBtns();_rowCache=[];updateP1(getVF());
+        },
+        scales:{x:{stacked:true,ticks:{font:{size:10},color:gt()},grid:{color:gbg()}},y:{stacked:true,beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}}}
+      }
+    });
+  }
+
   const sMap={};data.forEach(r=>{const s=r['Status']||'Sem status';sMap[s]=(sMap[s]||0)+1;});
   const sL=Object.keys(sMap).sort((a,b)=>sMap[b]-sMap[a]);
   if(ch.est)ch.est.destroy();
@@ -1385,7 +1493,30 @@ function updateP1(data){
   const dk='Demanda / Tarefa / Projeto';
   document.getElementById('rc-prev').textContent=`${data.length} itens`;
   _cachePrev=[];
-  document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{const _ip=_cachePrev.push(r)-1;return `<tr onclick="_openPrevFromCache(${_ip})" style="cursor:pointer"><td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td><td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td><td><span class="trunc">${r[dk]||'—'}</span></td><td>${sBadge(r['Status'])}</td><td style="font-size:11px;white-space:nowrap;color:var(--text2)">${r['Previsão Desenvolvimento']||'—'}</td><td style="font-size:11px;white-space:nowrap;color:var(--text2)">${r['Previsão Produção']||'—'}</td><td style="font-size:11px;white-space:nowrap;color:var(--text2)">${r['Entrega em Produção']||'—'}</td></tr>`;}).join(''):'<tr><td colspan="7" class="empty">Nenhuma demanda encontrada</td></tr>';
+  document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{
+    const _ip=_cachePrev.push(r)-1;
+    // Função para colorir datas: vermelho se entrega > previsão, verde se <= previsão
+    function dateCor(entrega, previsao){
+      if(!entrega||entrega==='—') return 'color:var(--text3)';
+      if(!previsao||previsao==='—') return 'color:var(--text2)';
+      const toDate=s=>{const p=s.split('/');return p.length===3?new Date(p[2],p[1]-1,p[0]):new Date(s);};
+      try{const de=toDate(entrega),dp=toDate(previsao);return de>dp?'color:#DC2626;font-weight:600':'color:#16A34A;font-weight:600';}catch(e){return 'color:var(--text2)';}
+    }
+    const entDev=r['Entrega Desenvolvimento']||'—';
+    const entProd=r['Entrega em Produção']||'—';
+    const prevDev=r['Previsão Desenvolvimento']||'—';
+    const prevProd=r['Previsão Produção']||'—';
+    return `<tr onclick="_openPrevFromCache(${_ip})" style="cursor:pointer">
+      <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
+      <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
+      <td><span class="trunc">${r[dk]||'—'}</span></td>
+      <td>${sBadge(r['Status'])}</td>
+      <td style="font-size:11px;white-space:nowrap;color:var(--text3)">${r['Start Date']||'—'}</td>
+      <td style="font-size:11px;white-space:nowrap;color:var(--text2)">${prevDev}</td>
+      <td style="font-size:11px;white-space:nowrap;${dateCor(entDev,prevDev)}">${entDev}</td>
+      <td style="font-size:11px;white-space:nowrap;color:var(--text2)">${prevProd}</td>
+      <td style="font-size:11px;white-space:nowrap;${dateCor(entProd,prevProd)}">${entProd}</td>
+    </tr>\`;}).join('');}).join(''):'<tr><td colspan="7" class="empty">Nenhuma demanda encontrada</td></tr>';
 
 }
 

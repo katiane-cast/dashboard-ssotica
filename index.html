@@ -711,7 +711,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 
 
 <!-- ===== PAGE 5: ANÁLISE PRODUTO PIPEFY ===== -->
-<div id="page-pipefy" class="page active">
+<div id="page-pipefy" class="page">
   <div class="topbar">
     <div class="topbar-left">
       <div class="page-title">Análise Produto (Kati) — Pipefy</div>
@@ -1019,9 +1019,22 @@ function showPage(n){
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   document.querySelector('[data-page="'+n+'"]').classList.add('active');
+  try{localStorage.setItem('activePage',n);}catch(e){}
   // Carregar Pipefy somente quando a página for aberta pela primeira vez
   if(n==='pipefy' && allPipefyCards.length===0) loadPipefy();
 }
+
+// Restaurar última página visitada
+(()=>{
+  try{
+    const saved=localStorage.getItem('activePage');
+    if(saved && document.getElementById('page-'+saved)){
+      showPage(saved);
+    } else {
+      showPage('viaveis');
+    }
+  }catch(e){ showPage('viaveis'); }
+})();
 
 function parseCSV(t){
   let cur='',inQ=false,f=[],rows=[];

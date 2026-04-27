@@ -713,7 +713,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 <div id="page-pipefy" class="page active">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="page-title">Análise Produto (Kati) — Pipefy</div>
+      <div class="page-title">Melhorias em Triagem (Pipefy)</div>
       <div class="page-subtitle">Sugestões aguardando análise · <span id="pipefy-count">—</span> cards · conectado ao Pipefy em tempo real</div>
     </div>
     <div class="topbar-right">
@@ -783,8 +783,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Tipo de Cliente</div><span class="chart-badge" id="tot-pipefy-colab"></span></div>
         <button class="chart-clear-btn" id="clr-pipefy-colab" onclick="applyPipefyFilter('colab','')" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição por tipo de cliente (Diamante, Ouro, Prata, Bronze) · clique para filtrar</div>
-      <div style="position:relative;height:200px"><canvas id="cPipefyColab" role="img" aria-label="Demandas por tipo de cliente"></canvas></div>
+      <div class="chart-sub">Distribuição por tipo de cliente · clique para filtrar</div>
+      <div id="tipo-cliente-chart" style="padding:16px 8px 8px"></div>
     </div>
   </div>
 
@@ -1947,7 +1947,7 @@ function updatePipefyPage(cards){
     }
   });
 
-  // Gráfico: Tipo de Cliente — com onClick interligado
+  // Gráfico: Tipo de Cliente — widget lúdico com medalhas
   const tipoOrder = ['Diamante','Ouro','Prata','Bronze'];
   const colabMap = {};
   cards.forEach(c=>{
@@ -1956,29 +1956,51 @@ function updatePipefyPage(cards){
     colabMap[key]=(colabMap[key]||0)+1;
   });
   const cL = [...tipoOrder.filter(t=>colabMap[t]), ...Object.keys(colabMap).filter(k=>!tipoOrder.includes(k)).sort((a,b)=>colabMap[b]-colabMap[a])];
-  const tipoColors = {'Diamante':colors[5],'Ouro':colors[2],'Prata':colors[9],'Bronze':colors[7]};
-  const cBgColors = cL.map((l,i)=>{
-    const base = tipoColors[l]||colors[i%colors.length];
-    if(pipefyChartFilter.colab && pipefyChartFilter.colab===l) return base+'EE';
-    if(pipefyChartFilter.colab && pipefyChartFilter.colab!==l) return base+'22';
-    return base+'99';
-  });
-  const cBdColors = cL.map((l,i)=>tipoColors[l]||colors[i%colors.length]);
-  if(ch.ppColab) ch.ppColab.destroy();
-  ch.ppColab = new Chart(document.getElementById('cPipefyColab'),{
-    type:'bar',
-    data:{labels:cL, datasets:[{data:cL.map(l=>colabMap[l]||0), backgroundColor:cBgColors, borderColor:cBdColors, borderWidth:pipefyChartFilter.colab?cL.map(l=>l===pipefyChartFilter.colab?3:1):2, borderRadius:5}]},
-    options:{
-      indexAxis:'y', responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas${pipefyChartFilter.colab===cL[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
-      onClick(evt,els){
-        if(!els.length) return;
-        applyPipefyFilter('colab', cL[els[0].index]);
-      },
-      scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+  const elTotColab=document.getElementById('tot-pipefy-colab');if(elTotColab)elTotColab.textContent='Total: '+total;
+  const tipoMeta = {
+    'Diamante': {
+      icon:`<svg width="38" height="38" viewBox="0 0 38 38" fill="none"><polygon points="19,3 33,13 28,34 10,34 5,13" fill="#67C6F0" stroke="#2196C4" stroke-width="1.5"/><polygon points="19,3 33,13 19,10 5,13" fill="#A8E1F8" stroke="#2196C4" stroke-width="1"/><polygon points="19,10 33,13 28,34 10,34 5,13" fill="#4BB8EC" stroke="#2196C4" stroke-width="0.5"/><polygon points="19,10 28,34 10,34" fill="#2196C4" stroke="#2196C4" stroke-width="0.5"/><polygon points="19,3 25,10 19,10 13,10" fill="#D6F3FC" stroke="#2196C4" stroke-width="0.5"/></svg>`,
+      label:'Diamante', bar:'#67C6F0', barBg:'#E6F7FD', text:'#0C6E9C'
     },
-    plugins:[numPlugin]
-  });
+    'Ouro': {
+      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#F5C842" stroke="#C9A000" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#FFE07A" stroke="#C9A000" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#7A5C00">Au</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#C9A000"/><rect x="17" y="5" width="4" height="9" fill="#C9A000"/></svg>`,
+      label:'Ouro', bar:'#F5C842', barBg:'#FFFBEA', text:'#7A5C00'
+    },
+    'Prata': {
+      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#C8C8C8" stroke="#888" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#555">Ag</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#888"/><rect x="17" y="5" width="4" height="9" fill="#888"/></svg>`,
+      label:'Prata', bar:'#C8C8C8', barBg:'#F5F5F5', text:'#555'
+    },
+    'Bronze': {
+      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#CD7F32" stroke="#8B5A1A" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#E8A060" stroke="#8B5A1A" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#4A2800">Bz</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#8B5A1A"/><rect x="17" y="5" width="4" height="9" fill="#8B5A1A"/></svg>`,
+      label:'Bronze', bar:'#CD7F32', barBg:'#FBF0E4', text:'#5A2D00'
+    }
+  };
+  const maxVal = Math.max(...cL.map(l=>colabMap[l]||0), 1);
+  const chartEl = document.getElementById('tipo-cliente-chart');
+  if(chartEl){
+    chartEl.innerHTML = cL.map(key=>{
+      const meta = tipoMeta[key]||{icon:'',label:key,bar:'#888',barBg:'#eee',text:'#333'};
+      const val = colabMap[key]||0;
+      const pct = Math.round(val/maxVal*100);
+      const isActive = pipefyChartFilter.colab===key;
+      const isFiltered = pipefyChartFilter.colab && !isActive;
+      const opacity = isFiltered?'0.3':'1';
+      const outline = isActive?`2px solid ${meta.bar}`:'none';
+      return `<div onclick="applyPipefyFilter('colab','${key}')" title="${key}: ${val} demandas${isActive?' — clique para limpar':' — clique para filtrar'}"
+        style="display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:${isActive?meta.barBg:'transparent'};outline:${outline};transition:all .2s;opacity:${opacity}">
+        <div style="flex-shrink:0;filter:${isFiltered?'grayscale(1)':'none'}">${meta.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:600;color:${meta.text}">${meta.label}</span>
+            <span style="font-size:13px;font-weight:600;color:${meta.text}">${val}</span>
+          </div>
+          <div style="height:8px;border-radius:4px;background:var(--surface3);overflow:hidden">
+            <div style="height:100%;border-radius:4px;background:${meta.bar};width:${pct}%;transition:width .5s ease"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
   // Tabela — usa cache dedicado para não conflitar com outras páginas
   _cachePipefy = [];

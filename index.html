@@ -944,7 +944,7 @@ function setYearFilter(year){
   document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('ybtn-'+year).classList.add('active');
   const label=year==='all'?'Todos os anos':year;
-  document.getElementById('entregasSub').textContent=`Entregas em produção — ${label} — valores exibidos sobre cada ponto`;
+  document.getElementById('entregasSub')&&(document.getElementById('entregasSub').textContent=`Entregas em produção — ${label} — valores exibidos sobre cada ponto`);
   updateChartClearBtns();
   updateP1(getVF()); // atualiza cards + todos os gráficos com dados filtrados por ano
 }
@@ -1437,15 +1437,15 @@ function updateP1(data){
    const nTeste=allData.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
    const nSus=allData.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
    const anoSuffix=yearFilter&&yearFilter!=='all'?' ('+yearFilter+')':'';
-   document.getElementById('kv-total').textContent=total+(total!==totalAll?' /'+totalAll:'');
-   document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix;
-   document.getElementById('kv-fila').textContent=nFila;
-   document.getElementById('kv-entregue').textContent=nEnt;
-   document.getElementById('kv-entregue').closest('.kpi-card').querySelector('.kpi-sub').textContent='em produção'+anoSuffix;
-   document.getElementById('kv-backlog').textContent=nBacklog;
-   document.getElementById('kv-dev').textContent=nDev;
-   document.getElementById('kv-teste').textContent=nTeste;
-   document.getElementById('kv-suspensa').textContent=nSus;
+   const _kvT=document.getElementById('kv-total');if(_kvT)_kvT.textContent=total+(total!==totalAll?' /'+totalAll:'');
+   document.getElementById('kv-total')?.closest('.kpi-card')?.querySelector('.kpi-sub')&&(document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix);
+   document.getElementById('kv-fila')&&(document.getElementById('kv-fila').textContent=nFila);
+   document.getElementById('kv-entregue')&&(document.getElementById('kv-entregue').textContent=nEnt);
+   document.getElementById('kv-entregue')?.closest('.kpi-card')?.querySelector('.kpi-sub')&&(document.getElementById('kv-entregue').closest('.kpi-card').querySelector('.kpi-sub').textContent='em produção'+anoSuffix);
+   document.getElementById('kv-backlog')&&(document.getElementById('kv-backlog').textContent=nBacklog);
+   document.getElementById('kv-dev')&&(document.getElementById('kv-dev').textContent=nDev);
+   document.getElementById('kv-teste')&&(document.getElementById('kv-teste').textContent=nTeste);
+   document.getElementById('kv-suspensa')&&(document.getElementById('kv-suspensa').textContent=nSus);
    const refBase=allData.length||1;
    if(total>0){document.getElementById('kv-bar-entregue').style.width=Math.round(nEnt/total*100)+'%';}
    if(refBase>0){
@@ -1566,7 +1566,7 @@ function updateP1(data){
   const dk='Demanda / Tarefa / Projeto';
   const mesLabel = chartFilter.month!==null&&chartFilter.month!==undefined ? ` — ${MESES_F[chartFilter.month]}` : '';
   const anoLabel = yearFilter&&yearFilter!=='all' ? ` — ${yearFilter}` : '';
-  document.getElementById('rc-prev').textContent=`${data.length} itens${anoLabel}${mesLabel}`;
+  const _rcPrev=document.getElementById('rc-prev');if(_rcPrev)_rcPrev.textContent=`${data.length} itens${anoLabel}${mesLabel}`;
   _cachePrev=[];
   document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{
     const _ip=_cachePrev.push(r)-1;
@@ -1608,12 +1608,12 @@ function updateP2(data){
   const nVia=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return(s.includes('VIÁV')||s.includes('VIAV'))&&!s.includes('INVI')&&!s.includes('PARCIAL');}).length;
   const nParc=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PARCIAL');}).length;
   const nPainel=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PAINEL')||s.includes('ESTRATÉG')||s.includes('ESTRATEG');}).length;
-  document.getElementById('ki-total').textContent=tot||'—';
-  document.getElementById('ki-inviavel').textContent=nInv||'—';
-  document.getElementById('ki-devolvido').textContent=nDev||'—';
-  document.getElementById('ki-viavel').textContent=nVia||'—';
-  document.getElementById('ki-parcial').textContent=nParc||'—';
-  document.getElementById('ki-painel').textContent=nPainel||'—';
+  document.getElementById('ki-total')&&(document.getElementById('ki-total').textContent=tot||'—');
+  document.getElementById('ki-inviavel')&&(document.getElementById('ki-inviavel').textContent=nInv||'—');
+  document.getElementById('ki-devolvido')&&(document.getElementById('ki-devolvido').textContent=nDev||'—');
+  document.getElementById('ki-viavel')&&(document.getElementById('ki-viavel').textContent=nVia||'—');
+  document.getElementById('ki-parcial')&&(document.getElementById('ki-parcial').textContent=nParc||'—');
+  document.getElementById('ki-painel')&&(document.getElementById('ki-painel').textContent=nPainel||'—');
   if(tot>0){
     document.getElementById('ki-bar-inv').style.cssText=`width:${Math.round(nInv/tot*100)}%;background:var(--c-rose)`;
     document.getElementById('ki-bar-dev').style.cssText=`width:${Math.round(nDev/tot*100)}%;background:var(--c-violet)`;
@@ -1621,7 +1621,7 @@ function updateP2(data){
     document.getElementById('ki-bar-parc').style.cssText=`width:${Math.round(nParc/tot*100)}%;background:var(--c-amber)`;
     document.getElementById('ki-bar-painel').style.cssText=`width:${Math.round(nPainel/tot*100)}%;background:var(--c-teal)`;
   }
-  document.getElementById('rc-inv').textContent=`${data.length} itens`;
+  document.getElementById('rc-inv')&&(document.getElementById('rc-inv').textContent=`${data.length} itens`);
   _cacheInv=[];
   document.getElementById('tb-inv').innerHTML=data.length?data.map(r=>{
     const _ii=_cacheInv.push(r)-1;
@@ -1638,8 +1638,8 @@ function updateP3(data){
   const reqMes=buildReqMes(data,year);
   const total=reqMes.reduce((a,b)=>a+b,0);
   const label=year==='all'?'Todos os anos':year;
-  document.getElementById('tot-req').textContent=`Total: ${total}`;
-  document.getElementById('req-chart-sub').textContent=`Requisitos entregues em produção — ${label} — valores sobre os pontos`;
+  document.getElementById('tot-req')&&(document.getElementById('tot-req').textContent=`Total: ${total}`);
+  document.getElementById('req-chart-sub')&&(document.getElementById('req-chart-sub').textContent=`Requisitos entregues em produção — ${label} — valores sobre os pontos`);
 
   const color=year==='2025'?colors[1]:colors[0];
   const activeMonth=null; // requisitos não tem filtro de mês por enquanto
@@ -1666,7 +1666,7 @@ function updateP3(data){
 
   // Tabela
   const dk='Demanda / Tarefa / Projeto';
-  document.getElementById('rc-req').textContent=`${data.length} itens`;
+  document.getElementById('rc-req')&&(document.getElementById('rc-req').textContent=`${data.length} itens`);
   _cacheReq=[];
   document.getElementById('tb-req').innerHTML=data.length?data.map(r=>{const _ir=_cacheReq.push(r)-1;return `<tr onclick="_openReqFromCache(${_ir})" style="cursor:pointer"><td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td><td style="font-size:11px;color:var(--text3)">${r['Ano']||'—'}</td><td><span class="trunc">${r[dk]||'—'}</span></td><td>${sBadge(r['Status'])}</td><td style="font-size:11px">${r['Sprint']||'—'}</td><td><span class="trunc">${r['Solicitante']||'—'}</span></td><td style="font-size:11px;white-space:nowrap;color:var(--text2)">${r['Entrega em Produção']||'—'}</td></tr>`;}).join(''):'<tr><td colspan="7" class="empty">Nenhuma demanda encontrada</td></tr>';
 }

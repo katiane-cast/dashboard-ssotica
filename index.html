@@ -350,6 +350,29 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 }
 .chart-clear-btn:hover { filter: brightness(.92); }
 .prio-score-label { display: none; }
+#tb-prio select { color: transparent !important; }
+#tb-prio select option { color: var(--text) !important; }
+.multiselect-wrap { position:relative; }
+.multiselect-btn {
+  font-family:'Inter',sans-serif; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:7px; color:var(--text); font-size:12px; padding:6px 10px; height:34px;
+  outline:none; width:100%; cursor:pointer; text-align:left; display:flex; align-items:center;
+  justify-content:space-between; gap:4px; white-space:nowrap; overflow:hidden;
+}
+.multiselect-btn:focus { border-color:var(--c-blue); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+.multiselect-dropdown {
+  display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:200;
+  background:var(--surface); border:1px solid var(--border2); border-radius:8px;
+  box-shadow:var(--shadow-md); min-width:200px; max-height:220px; overflow-y:auto; padding:4px 0;
+}
+.multiselect-dropdown.open { display:block; }
+.multiselect-option {
+  display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer;
+  font-size:12px; color:var(--text2); transition:background .1s;
+}
+.multiselect-option:hover { background:var(--surface2); }
+.multiselect-option input[type=checkbox] { accent-color:var(--c-blue); width:13px; height:13px; flex-shrink:0; }
+.multiselect-option.checked { color:var(--text); font-weight:500; }
 .err-banner { background: var(--c-rose-bg); border: 1px solid var(--c-rose-bd); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--c-rose); display: none; }
 .admin-login { padding: 10px 10px 4px; }
 .admin-login input[type="email"] { font-size:11px; height:28px; padding:0 8px; border-radius:6px; width:100%; }
@@ -460,6 +483,15 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
     <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
     <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
+    <div class="fg">
+      <div class="fl">Dev Resp.</div>
+      <div class="multiselect-wrap" id="prio-devresp-wrap">
+        <button type="button" class="multiselect-btn" id="prio-devresp-btn" onclick="togglePrioDevResp(event)">
+          <span id="prio-devresp-label">Todos</span><span style="font-size:9px;opacity:.5">▼</span>
+        </button>
+        <div class="multiselect-dropdown" id="prio-devresp-dropdown"></div>
+      </div>
+    </div>
     <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="prio-fQ" placeholder="Demanda, Jira, ID contrato..."></div>
   </div>
 
@@ -2309,6 +2341,50 @@ function setPrioScore(id, val){
   updatePrio(getPrioFiltered());
 }
 
+// ===== MULTISELECT DEV RESP. =====
+let prioDevRespSelected = new Set();
+
+function togglePrioDevResp(e){
+  e.stopPropagation();
+  const dd = document.getElementById('prio-devresp-dropdown');
+  dd.classList.toggle('open');
+}
+// Fechar ao clicar fora
+document.addEventListener('click', e=>{
+  const wrap = document.getElementById('prio-devresp-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('prio-devresp-dropdown')?.classList.remove('open');
+  }
+});
+function togglePrioDevRespOption(val){
+  if(prioDevRespSelected.has(val)) prioDevRespSelected.delete(val);
+  else prioDevRespSelected.add(val);
+  updatePrioDevRespLabel();
+  updatePrio(getPrioFiltered());
+}
+function updatePrioDevRespLabel(){
+  const lbl = document.getElementById('prio-devresp-label');
+  if(!lbl) return;
+  const s = prioDevRespSelected.size;
+  lbl.textContent = s === 0 ? 'Todos' : s === 1 ? [...prioDevRespSelected][0] : `${s} selecionados`;
+  // Atualizar checkboxes
+  document.querySelectorAll('#prio-devresp-dropdown .multiselect-option').forEach(opt=>{
+    const cb = opt.querySelector('input[type=checkbox]');
+    const checked = prioDevRespSelected.has(opt.dataset.val);
+    if(cb) cb.checked = checked;
+    opt.classList.toggle('checked', checked);
+  });
+}
+function popPrioDevResp(vals){
+  const dd = document.getElementById('prio-devresp-dropdown');
+  if(!dd) return;
+  dd.innerHTML = vals.map(v=>`
+    <label class="multiselect-option${prioDevRespSelected.has(v)?' checked':''}" data-val="${v}" onclick="event.preventDefault();togglePrioDevRespOption('${v.replace(/'/g,"\\'")}')">
+      <input type="checkbox" ${prioDevRespSelected.has(v)?'checked':''} onclick="event.stopPropagation()">
+      <span>${v}</span>
+    </label>`).join('');
+}
+
 function getPrioFiltered(){
   const fOrig=document.getElementById('prio-fOrig')?.value||'';
   const fSol=document.getElementById('prio-fSol')?.value||'';
@@ -2318,8 +2394,9 @@ function getPrioFiltered(){
     if(fOrig&&(r['Origem']||'')!==fOrig)return false;
     if(fSol&&(r['Solicitante']||'')!==fSol)return false;
     if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
+    if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;
     if(fQ){
-      const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem']].join(' ').toLowerCase();
+      const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem'],r['Dev Resp.']].join(' ').toLowerCase();
       if(!h.includes(fQ))return false;
     }
     return true;
@@ -2366,10 +2443,10 @@ function updatePrio(data){
       <td onclick="event.stopPropagation()" style="min-width:130px">
         <span class="trunc" style="max-width:150px;font-size:11px;display:block">${r['Ordem de Desenvolv.']||'—'}</span>
         ${isAdmin()?`<select onchange="setPrioScore('${id}',this.value)"
-            style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;width:100%;margin-top:3px"
+            style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;width:100%;margin-top:3px;appearance:auto"
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
-            <option value="" ${score===undefined?'selected':''}>—</option>
-            ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
+            <option value="" ${score===undefined?'selected':''} style="color:var(--text)">— pontuar —</option>
+            ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(i=>`<option value="${i}" ${score===i?'selected':''} style="color:var(--text)">${i}</option>`).join('')}
           </select>`:''}
       </td>
     </tr>`;
@@ -2391,6 +2468,7 @@ function popPrioFilters(){
   fill('prio-fOrig',u(allPrioData,'Origem'));
   fill('prio-fSol',u(allPrioData,'Solicitante'));
   fill('prio-fCrit',u(allPrioData,'Criticidade'));
+  popPrioDevResp(u(allPrioData,'Dev Resp.'));
 }
 
 // Event listeners

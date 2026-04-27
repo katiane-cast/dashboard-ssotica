@@ -613,11 +613,15 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
-        <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
+        <div class="chart-title">Demandas na Esteira</div>
+        <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
+      <div class="hint-box">
+        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
+        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
+      </div>
     </div>
     <div class="chart-card">
       <div class="chart-header">
@@ -629,18 +633,14 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <div class="charts-row">
+  <div class="charts-row full">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Demandas na Esteira</div>
-        <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
+        <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
-      <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
-      <div class="hint-box">
-        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
-        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
-      </div>
+      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
+      <div style="position:relative;height:260px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
     </div>
   </div>
 
@@ -663,15 +663,16 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <thead><tr>
         <th onclick="srt('prev','Jira')">Jira <span class="si">↕</span></th>
         <th>ID Contrato</th>
+        <th onclick="srt('prev','Solicitante')">Solicitante <span class="si">↕</span></th>
         <th onclick="srt('prev','dem')">Demanda <span class="si">↕</span></th>
         <th onclick="srt('prev','Status')">Status <span class="si">↕</span></th>
         <th>Start Date</th>
         <th>Prev. Dev</th>
         <th>Entrega Dev</th>
         <th>Prev. Prod</th>
-        <th>Entrega Requisito</th>
+        <th>Entrega em Produção</th>
       </tr></thead>
-      <tbody id="tb-prev"><tr class="loading-row"><td colspan="9"><span class="spin"></span>Carregando...</td></tr></tbody>
+      <tbody id="tb-prev"><tr class="loading-row"><td colspan="10"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
   </div>
 
@@ -1670,6 +1671,7 @@ function updateP1(data){
     return `<tr onclick="_openPrevFromCache(${_ip})" style="cursor:pointer">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
+      <td style="font-size:11px"><span class="trunc" style="max-width:120px">${r['Solicitante']||'—'}</span></td>
       <td><span class="trunc">${r[dk]||'—'}</span></td>
       <td>${sBadge(r['Status'])}</td>
       <td style="font-size:11px;white-space:nowrap;color:var(--text3)">${r['Start Date']||'—'}</td>
@@ -1677,7 +1679,7 @@ function updateP1(data){
       <td style="font-size:11px;white-space:nowrap;${dateCor(entDev,prevDev)}">${entDev}</td>
       <td style="font-size:11px;white-space:nowrap;color:var(--text2)">${prevProd}</td>
       <td style="font-size:11px;white-space:nowrap;${dateCor(entProd,prevProd)}">${entProd}</td>
-    </tr>`;}).join(''):'<tr><td colspan="9" class="empty">Nenhuma demanda encontrada</td></tr>';
+    </tr>`;}).join(''):'<tr><td colspan="10" class="empty">Nenhuma demanda encontrada</td></tr>';
 }
 
 // ===== PAGE 2 =====

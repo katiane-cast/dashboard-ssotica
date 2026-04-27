@@ -1947,64 +1947,87 @@ function updatePipefyPage(cards){
     }
   });
 
-  // Gráfico: Tipo de Cliente — widget lúdico com medalhas
-  const tipoOrder = ['Diamante','Ouro','Prata','Bronze'];
-  const colabMap = {};
-  cards.forEach(c=>{
-    const t=getFieldVal(c.fields,'Tipo do cliente')||'Não informado';
-    const key=tipoOrder.find(o=>t.toLowerCase().includes(o.toLowerCase()))||t;
-    colabMap[key]=(colabMap[key]||0)+1;
-  });
-  const cL = [...tipoOrder.filter(t=>colabMap[t]), ...Object.keys(colabMap).filter(k=>!tipoOrder.includes(k)).sort((a,b)=>colabMap[b]-colabMap[a])];
-  const elTotColab=document.getElementById('tot-pipefy-colab');if(elTotColab)elTotColab.textContent='Total: '+total;
-  const tipoMeta = {
-    'Diamante': {
-      icon:`<svg width="38" height="38" viewBox="0 0 38 38" fill="none"><polygon points="19,3 33,13 28,34 10,34 5,13" fill="#67C6F0" stroke="#2196C4" stroke-width="1.5"/><polygon points="19,3 33,13 19,10 5,13" fill="#A8E1F8" stroke="#2196C4" stroke-width="1"/><polygon points="19,10 33,13 28,34 10,34 5,13" fill="#4BB8EC" stroke="#2196C4" stroke-width="0.5"/><polygon points="19,10 28,34 10,34" fill="#2196C4" stroke="#2196C4" stroke-width="0.5"/><polygon points="19,3 25,10 19,10 13,10" fill="#D6F3FC" stroke="#2196C4" stroke-width="0.5"/></svg>`,
-      label:'Diamante', bar:'#67C6F0', barBg:'#E6F7FD', text:'#0C6E9C'
-    },
-    'Ouro': {
-      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#F5C842" stroke="#C9A000" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#FFE07A" stroke="#C9A000" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#7A5C00">Au</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#C9A000"/><rect x="17" y="5" width="4" height="9" fill="#C9A000"/></svg>`,
-      label:'Ouro', bar:'#F5C842', barBg:'#FFFBEA', text:'#7A5C00'
-    },
-    'Prata': {
-      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#C8C8C8" stroke="#888" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#555">Ag</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#888"/><rect x="17" y="5" width="4" height="9" fill="#888"/></svg>`,
-      label:'Prata', bar:'#C8C8C8', barBg:'#F5F5F5', text:'#555'
-    },
-    'Bronze': {
-      icon:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="21" r="13" fill="#CD7F32" stroke="#8B5A1A" stroke-width="1.5"/><circle cx="19" cy="21" r="9" fill="#E8A060" stroke="#8B5A1A" stroke-width="0.8"/><text x="19" y="25" text-anchor="middle" font-size="11" font-weight="700" fill="#4A2800">Bz</text><rect x="13" y="4" width="12" height="5" rx="2" fill="#8B5A1A"/><rect x="17" y="5" width="4" height="9" fill="#8B5A1A"/></svg>`,
-      label:'Bronze', bar:'#CD7F32', barBg:'#FBF0E4', text:'#5A2D00'
-    }
-  };
-  const maxVal = Math.max(...cL.map(l=>colabMap[l]||0), 1);
-  const chartEl = document.getElementById('tipo-cliente-chart');
-  if(chartEl){
-    chartEl.innerHTML='';
-    cL.forEach(key=>{
-      const meta = tipoMeta[key]||{icon:'',label:key,bar:'#888',barBg:'#eee',text:'#333'};
-      const val = colabMap[key]||0;
-      const pct = Math.round(val/maxVal*100);
-      const isActive = pipefyChartFilter.colab===key;
-      const isFiltered = pipefyChartFilter.colab && !isActive;
-      const opacity = isFiltered?'0.3':'1';
-      const outline = isActive?`2px solid ${meta.bar}`:'none';
-      const div=document.createElement('div');
-      div.style.cssText=`display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:${isActive?meta.barBg:'transparent'};outline:${outline};transition:all .2s;opacity:${opacity}`;
-      div.title=`${key}: ${val} demandas`;
-      div.addEventListener('click',()=>applyPipefyFilter('colab',key));
-      div.innerHTML=`<div style="flex-shrink:0;filter:${isFiltered?'grayscale(1)':'none'}">${meta.icon}</div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-            <span style="font-size:13px;font-weight:600;color:${meta.text}">${meta.label}</span>
-            <span style="font-size:13px;font-weight:600;color:${meta.text}">${val}</span>
-          </div>
-          <div style="height:8px;border-radius:4px;background:var(--surface3);overflow:hidden">
-            <div style="height:100%;border-radius:4px;background:${meta.bar};width:${pct}%;transition:width .5s ease"></div>
-          </div>
-        </div>`;
-      return div;
-      chartEl.appendChild(div);
+  // Widget: Tipo de Cliente — medalhas
+  try{
+    const _tO=['Diamante','Ouro','Prata','Bronze'];
+    const _cM={};
+    cards.forEach(function(c){
+      var t=getFieldVal(c.fields,'Tipo do cliente')||'Não informado';
+      var k=_tO.find(function(o){return t.toLowerCase().indexOf(o.toLowerCase())>=0;})||t;
+      _cM[k]=(_cM[k]||0)+1;
     });
-  }
+    var _cL=_tO.filter(function(t){return _cM[t];}).concat(
+      Object.keys(_cM).filter(function(k){return _tO.indexOf(k)<0;}).sort(function(a,b){return _cM[b]-_cM[a];})
+    );
+    var elTotColab=document.getElementById('tot-pipefy-colab');
+    if(elTotColab)elTotColab.textContent='Total: '+total;
+    var _meta={'Diamante':{bar:'#67C6F0',barBg:'#E6F7FD',txtC:'#0C6E9C',emoji:'💎'},
+               'Ouro':{bar:'#F5C842',barBg:'#FFFBEA',txtC:'#7A5C00',emoji:'🥇'},
+               'Prata':{bar:'#C0C0C0',barBg:'#F5F5F5',txtC:'#555',emoji:'🥈'},
+               'Bronze':{bar:'#CD7F32',barBg:'#FBF0E4',txtC:'#5A2D00',emoji:'🥉'}};
+    var _max=Math.max.apply(null,_cL.map(function(l){return _cM[l]||0;}).concat([1]));
+    var chartEl=document.getElementById('tipo-cliente-chart');
+    if(chartEl){
+      chartEl.innerHTML='';
+      _cL.forEach(function(key){
+        var m=_meta[key]||{bar:'#888',barBg:'#eee',txtC:'#333',emoji:'📦'};
+        var val=_cM[key]||0;
+        var pct=Math.round(val/_max*100);
+        var isActive=pipefyChartFilter.colab===key;
+        var isFiltered=pipefyChartFilter.colab&&!isActive;
+        var row=document.createElement('div');
+        row.style.display='flex';
+        row.style.alignItems='center';
+        row.style.gap='14px';
+        row.style.padding='10px 14px';
+        row.style.borderRadius='10px';
+        row.style.cursor='pointer';
+        row.style.marginBottom='8px';
+        row.style.background=isActive?m.barBg:'transparent';
+        row.style.outline=isActive?('2px solid '+m.bar):'none';
+        row.style.opacity=isFiltered?'0.3':'1';
+        row.style.transition='all .2s';
+        row.addEventListener('click',function(k){return function(){applyPipefyFilter('colab',k);};}(key));
+        var icon=document.createElement('div');
+        icon.style.fontSize='28px';
+        icon.style.lineHeight='1';
+        icon.style.flexShrink='0';
+        icon.textContent=m.emoji;
+        var info=document.createElement('div');
+        info.style.flex='1';
+        var top=document.createElement('div');
+        top.style.display='flex';
+        top.style.justifyContent='space-between';
+        top.style.marginBottom='6px';
+        var lbl=document.createElement('span');
+        lbl.style.fontSize='13px';
+        lbl.style.fontWeight='600';
+        lbl.style.color=m.txtC;
+        lbl.textContent=key;
+        var num=document.createElement('span');
+        num.style.fontSize='13px';
+        num.style.fontWeight='600';
+        num.style.color=m.txtC;
+        num.textContent=val;
+        top.appendChild(lbl);top.appendChild(num);
+        var track=document.createElement('div');
+        track.style.height='8px';
+        track.style.borderRadius='4px';
+        track.style.background='var(--surface3)';
+        track.style.overflow='hidden';
+        var fill=document.createElement('div');
+        fill.style.height='100%';
+        fill.style.borderRadius='4px';
+        fill.style.background=m.bar;
+        fill.style.width=pct+'%';
+        fill.style.transition='width .5s ease';
+        track.appendChild(fill);
+        info.appendChild(top);info.appendChild(track);
+        row.appendChild(icon);row.appendChild(info);
+        chartEl.appendChild(row);
+      });
+    }
+  }catch(e){console.warn('widget tipo cliente:',e);}
 
   // Tabela — usa cache dedicado para não conflitar com outras páginas
   _cachePipefy = [];

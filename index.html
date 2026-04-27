@@ -1357,7 +1357,7 @@ function openPipefyModal(c){
 
 // ===== PAGE 1 =====
 function updateP1(data){
-   const total=data.length;
+   const total=(!yearFilter||yearFilter==='all')?allData.length:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter).length;
    const totalAll=allData.length;
    const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nEnt=allData.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;

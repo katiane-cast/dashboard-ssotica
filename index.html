@@ -350,6 +350,10 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 }
 .chart-clear-btn:hover { filter: brightness(.92); }
 .err-banner { background: var(--c-rose-bg); border: 1px solid var(--c-rose-bd); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--c-rose); display: none; }
+.admin-login { padding: 10px 10px 4px; }
+.admin-login input[type="email"] { font-size:11px; height:28px; padding:0 8px; border-radius:6px; width:100%; }
+.admin-badge { display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:6px; background:rgba(99,179,237,0.08); font-size:11px; color:rgba(99,179,237,0.8); cursor:pointer; }
+.admin-badge:hover { background:rgba(99,179,237,0.14); }
 </style>
 </head>
 <body>
@@ -393,6 +397,19 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </nav>
   <div class="nav-footer">
+    <div id="admin-login-area" class="admin-login" style="display:none">
+      <input type="email" id="admin-email-input" placeholder="Seu e-mail..." style="margin-bottom:6px"
+        onkeydown="if(event.key==='Enter')doAdminLogin()">
+      <button class="btn" onclick="doAdminLogin()" style="width:100%;font-size:11px;padding:4px 0">Entrar</button>
+    </div>
+    <div id="admin-badge-area" style="display:none" class="admin-badge" onclick="doAdminLogout()" title="Clique para sair">
+      <span style="font-size:13px">🔑</span>
+      <span id="admin-badge-email" style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px"></span>
+    </div>
+    <div id="admin-toggle-btn" class="admin-badge" onclick="toggleAdminLogin()" title="Acesso restrito">
+      <span style="font-size:13px">🔒</span>
+      <span style="font-size:10px">Acesso restrito</span>
+    </div>
     <div class="live-badge">
       <span class="live-dot"></span>
       <span>Atualização automática</span>
@@ -805,7 +822,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver todos os detalhes da sugestão</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn" onclick="exportPipefyXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">⬇ Exportar Excel</button>
+        <button id="btn-export-xlsx" class="btn" onclick="exportPipefyXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd);display:none">⬇ Exportar Excel</button>
         <span class="tcard-count" id="rc-pipefy"></span>
       </div>
     </div>
@@ -818,7 +835,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Beneficia outros?</th>
         <th>Colaborador</th>
         <th onclick="srtPipefy('created_at')">Data <span class="si">↕</span></th>
-        <th style="min-width:160px">Classificação</th>
+        ${isAdmin() ? '<th style="min-width:160px">Classificação</th>' : ''}
       </tr></thead>
       <tbody id="tb-pipefy"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Conectando ao Pipefy...</td></tr></tbody>
     </table></div>
@@ -1347,7 +1364,7 @@ function openPipefyModal(c){
   const devAtual = pipefyDevolutiva[cardId]||'';
   const isInviavel = clsAtual === 'Inviável';
 
-  const devSection = isInviavel ? `
+  const devSection = isInviavel && isAdmin() ? `
     <div class="ms" style="margin-top:12px;border:1px solid var(--c-rose-bd);border-radius:10px;padding:12px 14px;background:var(--c-rose-bg)">
       <div class="ms-t" style="color:var(--c-rose);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span>Devolutiva ao Analista</span>
@@ -1708,6 +1725,69 @@ function getSprintFiltered(idx){
 
 
 
+
+// ===== ADMIN ACCESS CONTROL =====
+const ADMIN_EMAIL = 'katiane@ipe.digital';
+function isAdmin(){ try{return localStorage.getItem('admin_email')===ADMIN_EMAIL;}catch(e){return false;} }
+
+function applyAdminVisibility(){
+  const ok = isAdmin();
+  // Botão exportar Excel
+  const btnExp = document.getElementById('btn-export-xlsx');
+  if(btnExp) btnExp.style.display = ok ? 'inline-flex' : 'none';
+  // Badge e toggle no sidebar
+  const loginArea = document.getElementById('admin-login-area');
+  const badgeArea = document.getElementById('admin-badge-area');
+  const toggleBtn = document.getElementById('admin-toggle-btn');
+  const emailBadge = document.getElementById('admin-badge-email');
+  if(ok){
+    if(loginArea) loginArea.style.display='none';
+    if(badgeArea){ badgeArea.style.display='flex'; if(emailBadge) emailBadge.textContent=ADMIN_EMAIL; }
+    if(toggleBtn) toggleBtn.style.display='none';
+  } else {
+    if(badgeArea) badgeArea.style.display='none';
+    if(toggleBtn) toggleBtn.style.display='flex';
+  }
+  // Mostrar/esconder coluna Classificação no thead
+  const thCls = document.getElementById('th-classificacao');
+  if(thCls) thCls.style.display = ok ? '' : 'none';
+  // Re-renderizar tabela pipefy se estiver carregada
+  if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
+}
+
+function toggleAdminLogin(){
+  const area = document.getElementById('admin-login-area');
+  if(!area) return;
+  const visible = area.style.display !== 'none';
+  area.style.display = visible ? 'none' : 'block';
+  if(!visible) setTimeout(()=>document.getElementById('admin-email-input')?.focus(), 50);
+}
+
+function doAdminLogin(){
+  const input = document.getElementById('admin-email-input');
+  if(!input) return;
+  const val = input.value.trim().toLowerCase();
+  if(val === ADMIN_EMAIL){
+    try{localStorage.setItem('admin_email', ADMIN_EMAIL);}catch(e){}
+    input.value='';
+    applyAdminVisibility();
+  } else {
+    input.style.borderColor='var(--c-rose)';
+    input.placeholder='E-mail não autorizado';
+    setTimeout(()=>{ input.style.borderColor=''; input.placeholder='Seu e-mail...'; }, 2000);
+  }
+}
+
+function doAdminLogout(){
+  if(!confirm('Sair do acesso restrito?')) return;
+  try{localStorage.removeItem('admin_email');}catch(e){}
+  applyAdminVisibility();
+}
+
+// Inicializar ao carregar
+document.addEventListener('DOMContentLoaded', applyAdminVisibility);
+setTimeout(applyAdminVisibility, 100);
+
 // ===== PIPEFY =====
 // URL do proxy Google Apps Script — substitua após implantar
 let PIPEFY_PROXY_URL = '';
@@ -2024,7 +2104,7 @@ function updatePipefyPage(cards){
     const idx = _cachePipefy.push(c)-1;
     const cls = pipefyClass[c.id]||'';
     const clsBadgeMap = {'Viável':'b-viavel','Inviável':'b-inviavel','Painel Estratégico':'b-teste','Devolvida':'b-duplicada'};
-    const clsCell = `<td onclick="event.stopPropagation()" style="min-width:150px">
+    const clsCell = isAdmin() ? `<td onclick="event.stopPropagation()" style="min-width:150px">
         ${cls ? `<span class="badge ${clsBadgeMap[cls]||'b-other'}" style="display:block;margin-bottom:4px">${cls}</span>` : ''}
         <div style="display:flex;align-items:center;gap:4px">
           <select onchange="setPipefyClass('${c.id}',this.value);this.value=''"
@@ -2040,7 +2120,7 @@ function updatePipefyPage(cards){
             style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:0;line-height:1;flex-shrink:0"
             onmouseover="this.style.color='var(--c-rose)'" onmouseout="this.style.color='var(--text3)'">✕</button>` : ''}
         </div>
-      </td>`;
+      </td>` : '';
     return `<tr onclick="_openPipefyFromCache(${idx})" style="cursor:pointer">
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">#${c.id}</td>
       <td style="font-size:12px;font-weight:500">${c.title||'—'}</td>

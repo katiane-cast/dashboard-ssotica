@@ -6,6 +6,7 @@
 <title>Indicadores de Melhorias — ssOtica</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ===== DESIGN TOKENS ===== */
 [data-theme="light"] {
@@ -803,7 +804,10 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div class="tcard-title">Sugestões — Análise Produto (Kati)</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver todos os detalhes da sugestão</div>
       </div>
-      <span class="tcard-count" id="rc-pipefy"></span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" onclick="exportPipefyXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">⬇ Exportar Excel</button>
+        <span class="tcard-count" id="rc-pipefy"></span>
+      </div>
     </div>
     <div class="tw" style="max-height:420px;overflow-y:auto"><table>
       <thead><tr>
@@ -2048,6 +2052,57 @@ function updatePipefyPage(cards){
       ${clsCell}
     </tr>`;
   }).join('') : '<tr><td colspan="8" class="empty">Nenhuma sugestão encontrada</td></tr>';
+}
+
+
+function exportPipefyXLSX(){
+  if(!allPipefyCards.length){alert('Nenhum dado para exportar.');return;}
+  const cols = [
+    'Criado em','Ano','Triagem','Código Pipe','Colab','Cliente','ID','Jira',
+    'Título do Card','Qual é o tempo de contrato?','Tipo do cliente','Quantas Lojas?',
+    'Funcionalidade do Sistema','Registre a sugestão de melhoria',
+    'Como isso afeta o uso do sistema?','Condiciona Permanecia?',
+    'Descreva a solução paliativa','Visão PO','Status','Devolutiva ao analista'
+  ];
+  const rows = allPipefyCards.map(c=>{
+    const fv=name=>{const f=c.fields?.find(f=>f.name.toLowerCase().includes(name.toLowerCase()));return f?.value||'';};
+    const id=String(c.id);
+    const dt=c.created_at?new Date(c.created_at).toLocaleDateString('pt-BR'):'';
+    const ano=c.created_at?new Date(c.created_at).getFullYear():'';
+    return {
+      'Criado em': dt,
+      'Ano': ano,
+      'Triagem': '',
+      'Código Pipe': id,
+      'Colab': fv('Colaborador')||(c.assignees?.[0]?.name)||'',
+      'Cliente': fv('nome do cliente'),
+      'ID': fv('ID do contrato'),
+      'Jira': '',
+      'Título do Card': c.title||'',
+      'Qual é o tempo de contrato?': fv('tempo de contrato'),
+      'Tipo do cliente': fv('Tipo do cliente'),
+      'Quantas Lojas?': fv('Lojas'),
+      'Funcionalidade do Sistema': fv('Funcionalidade'),
+      'Registre a sugestão de melhoria': fv('Registre'),
+      'Como isso afeta o uso do sistema?': fv('afeta'),
+      'Condiciona Permanecia?': fv('Condiciona'),
+      'Descreva a solução paliativa': fv('paliativa'),
+      'Visão PO': fv('Visão PO'),
+      'Status': pipefyClass[id]||'',
+      'Devolutiva ao analista': pipefyDevolutiva[id]||''
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows,{header:cols});
+  // Larguras das colunas
+  ws['!cols']=[
+    {wch:12},{wch:6},{wch:12},{wch:12},{wch:18},{wch:20},{wch:14},{wch:12},
+    {wch:30},{wch:20},{wch:14},{wch:14},{wch:24},{wch:40},
+    {wch:36},{wch:20},{wch:36},{wch:30},{wch:18},{wch:40}
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Sugestões Pipefy');
+  const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  XLSX.writeFile(wb,'Sugestoes_Pipefy_'+hoje+'.xlsx');
 }
 
 function saveProxyUrl(){

@@ -1718,6 +1718,10 @@ function setPipefyClass(id,val){
   if(val)pipefyClass[id]=val;else delete pipefyClass[id];
   savePipefyClass();
   updatePipefyPage(getPipefyFiltered());
+  if(val==='Inviável'){
+    const c=_cachePipefy.find(c=>String(c.id)===String(id));
+    if(c) setTimeout(()=>openPipefyModal(c),50);
+  }
 }
 
 let pipefyDevolutiva = {};

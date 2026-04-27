@@ -573,7 +573,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Prev. Dev</th>
         <th>Entrega Dev</th>
         <th>Prev. Prod</th>
-        <th>Entrega Prod</th>
+        <th>Entrega Requisito</th>
       </tr></thead>
       <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -680,6 +680,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div class="chart-title">Requisitos Entregues por Período</div>
         <div style="display:flex;gap:6px;align-items:center">
           <span class="chart-badge" id="tot-req"></span>
+          <button class="chart-clear-btn" id="clr-req-month" onclick="clearReqMonth()" style="display:none">✕ Limpar</button>
           <button class="year-btn" id="rbtn-all" onclick="setReqYear('all')">Todos</button>
           <button class="year-btn" id="rbtn-2025" onclick="setReqYear('2025')">2025</button>
           <button class="year-btn" id="rbtn-2026" onclick="setReqYear('2026')">2026</button>
@@ -700,7 +701,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th onclick="srt('req','Status')">Status <span class="si">↕</span></th>
         <th>Sprint</th>
         <th onclick="srt('req','Solicitante')">Solicitante <span class="si">↕</span></th>
-        <th>Entrega Prod</th>
+        <th>Entrega Requisito</th>
       </tr></thead>
       <tbody id="tb-req"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -825,6 +826,7 @@ let SS={prev:{c:'',a:true},det:{c:'',a:true},req:{c:'',a:true}};
 let KF={viaveis:'',inviaveis:''};
 let yearFilter=String(new Date().getFullYear());
 let reqYearFilter=String(new Date().getFullYear());
+let reqMonthFilter=null;
 let chartFilter={status:'',sprint:'',month:null,origem:'',naoPlan:null}; // filtro ativo pelos gráficos
 
 function applyChartFilter(type, value){
@@ -919,8 +921,18 @@ function setYearFilter(year){
 
 function setReqYear(year){
   reqYearFilter=year;
+  reqMonthFilter=null;
+  const clrBtn=document.getElementById('clr-req-month');
+  if(clrBtn)clrBtn.style.display='none';
   document.querySelectorAll('[id^="rbtn-"]').forEach(b=>b.classList.remove('active'));
   document.getElementById('rbtn-'+year).classList.add('active');
+  updateP3(getReqF());
+}
+
+function clearReqMonth(){
+  reqMonthFilter=null;
+  const clrBtn=document.getElementById('clr-req-month');
+  if(clrBtn)clrBtn.style.display='none';
   updateP3(getReqF());
 }
 
@@ -1217,6 +1229,17 @@ function getReqF(){
     if(fS&&r['Status']!==fS)return false;
     if(fSol&&r['Solicitante']!==fSol)return false;
     if(fQ){const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante']].join(' ').toLowerCase();if(!h.includes(fQ))return false;}
+    if(reqMonthFilter!==null&&reqMonthFilter!==undefined){
+      const ep=r['Entrega em Produção']||'';
+      if(!ep||ep.toLowerCase().includes('definir'))return false;
+      const p=ep.split('/');if(p.length<2)return false;
+      const m=parseInt(p[1])-1;
+      if(m!==reqMonthFilter)return false;
+      if(reqYearFilter&&reqYearFilter!=='all'&&p.length>=3){
+        const a=parseInt(p[2]);const ay=a>100?a:2000+a;
+        if(String(ay)!==reqYearFilter)return false;
+      }
+    }
     return true;
   });
 }
@@ -1576,12 +1599,21 @@ function updateP3(data){
     type:'line',
     data:{labels:MESES_F,datasets:[{
       data:reqMes,borderColor:color,backgroundColor:color+'22',fill:true,tension:0.4,
-      pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,
-      pointRadius:5,pointHoverRadius:8,borderWidth:2.5
+      pointBackgroundColor:reqMes.map((_,i)=>i===reqMonthFilter?color:color+'AA'),
+      pointBorderColor:'#fff',pointBorderWidth:reqMes.map((_,i)=>i===reqMonthFilter?3:2),
+      pointRadius:reqMes.map((_,i)=>i===reqMonthFilter?8:5),pointHoverRadius:9,borderWidth:2.5
     }]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} requisitos em ${MESES_F[ctx.dataIndex]}`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} requisitos em ${MESES_F[ctx.dataIndex]}${reqMonthFilter===ctx.dataIndex?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+      onClick(evt,els){
+        if(!els.length)return;
+        const idx=els[0].index;
+        reqMonthFilter=reqMonthFilter===idx?null:idx;
+        const clrBtn=document.getElementById('clr-req-month');
+        if(clrBtn)clrBtn.style.display=reqMonthFilter!==null?'inline-flex':'none';
+        updateP3(getReqF());
+      },
       scales:{
         y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11},color:gt()},grid:{color:gbg()}},
         x:{ticks:{font:{size:11},color:gt(),maxRotation:35},grid:{display:false}}

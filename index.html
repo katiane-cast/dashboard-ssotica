@@ -2321,7 +2321,7 @@ function updatePrio(data){
   withScore.sort((a,b)=>{
     const ia=a['Jira']||a['ID Contrato']||a['Demanda / Tarefa / Projeto'];
     const ib=b['Jira']||b['ID Contrato']||b['Demanda / Tarefa / Projeto'];
-    return (prioScores[ib]||0)-(prioScores[ia]||0);
+    return (prioScores[ia]||0)-(prioScores[ib]||0);
   });
   const sorted = [...withScore, ...withoutScore];
 
@@ -2352,16 +2352,14 @@ function updatePrio(data){
       <td>${r['Criticidade']?cBadge(r['Criticidade']):'—'}</td>
       <td>${sBadge(r['Status'])}</td>
       <td onclick="event.stopPropagation()" style="min-width:130px">
-        <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;flex-direction:column;gap:3px">
           <span class="trunc" style="max-width:150px;font-size:11px">${r['Ordem de Desenvolv.']||'—'}</span>
-          ${isAdmin()?`<div style="display:flex;align-items:center;gap:4px">
-            <select onchange="setPrioScore('${id}',this.value)"
-              style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;flex:1"
+          ${isAdmin()?`<select onchange="setPrioScore('${id}',this.value)"
+              style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;width:100%"
               title="Pontuar demanda">
-              <option value="">—</option>
-              ${Array.from({length:16},(_,i)=>`<option value="${i}" ${score===i?'selected':''} >${i}</option>`).join('')}
-            </select>
-          </div>`:''}
+              <option value="" ${score===undefined?'selected':''}>—</option>
+              ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
+            </select>`:''}
         </div>
       </td>
     </tr>`;

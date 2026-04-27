@@ -2141,7 +2141,7 @@ function srtPipefy(col){
 document.getElementById('pp-fQ')?.addEventListener('input',()=>{ updatePipefyPage(getPipefyFiltered()); });
 
 async function loadData(){
-  document.querySelectorAll('.btn').forEach(b=>{if(b.textContent.includes('tualiz')){b.textContent='↻ Atualizando...';b.disabled=true;}});
+  document.querySelectorAll('.btn').forEach(b=>{if(b.onclick?.toString().includes('loadData')||b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizando...';b.disabled=true;}});
   try{
     const r1=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=0&t=${Date.now()}`);
     if(!r1.ok)throw new Error(`HTTP ${r1.status}`);
@@ -2162,7 +2162,7 @@ async function loadData(){
     const b=document.getElementById('err1');b.style.display='block';
     b.innerHTML=`<strong>Erro ao carregar dados.</strong> Verifique se a planilha está pública. <small style="opacity:.7">${e.message}</small>`;
   }
-  document.querySelectorAll('.btn').forEach(b=>{b.textContent='↻ Atualizar';b.disabled=false;});
+  document.querySelectorAll('.btn').forEach(b=>{if(b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizar';}b.disabled=false;});
 }
 // Events
 ['v-fS','v-fSol','v-fSp','v-fD','v-fA'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>updateP1(getVF())));

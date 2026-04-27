@@ -27,7 +27,6 @@
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
 
-  /* BI Palette — Slate-tinted blues & teals */
   --c-blue:   #2B6CB0; --c-blue-bg:   #EBF4FF; --c-blue-bd:   #90CDF4;
   --c-teal:   #2C7A7B; --c-teal-bg:   #E6FFFA; --c-teal-bd:   #81E6D9;
   --c-emerald:#276749; --c-emerald-bg:#F0FFF4; --c-emerald-bd:#9AE6B4;
@@ -36,7 +35,6 @@
   --c-violet: #5B21B6; --c-violet-bg: #F5F3FF; --c-violet-bd: #C4B5FD;
   --c-slate:  #374151; --c-slate-bg:  #F1F5F9; --c-slate-bd:  #CBD5E1;
 
-  /* Chart colors — harmonious BI palette */
   --chart1: #3B82F6; --chart2: #10B981; --chart3: #F59E0B;
   --chart4: #EF4444; --chart5: #8B5CF6; --chart6: #06B6D4;
   --chart7: #84CC16; --chart8: #F97316; --chart9: #EC4899; --chart10: #6B7280;
@@ -122,7 +120,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #34D399; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* Theme toggle in sidebar */
 .theme-btn {
   display: flex; align-items: center; gap: 8px; padding: 7px 10px;
   border-radius: 8px; cursor: pointer; font-size: 12px;
@@ -172,7 +169,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .kpi-bar { height: 3px; border-radius: 2px; margin-top: 10px; background: var(--border); overflow: hidden; }
 .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
 
-/* KPI color variants */
 .kpi-slate .kpi-icon { background: var(--c-slate-bg); }
 .kpi-slate .kpi-value { color: var(--c-slate); }
 .kpi-slate.kpi-active { border-color: var(--c-slate-bd); }
@@ -208,7 +204,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .kpi-teal.kpi-active { border-color: var(--c-teal-bd); }
 .kpi-teal .kpi-bar-fill { background: var(--c-teal); }
 
-/* Active filter pill */
 .filter-pill {
   display: none; align-items: center; gap: 8px;
   background: var(--c-blue-bg); border: 1px solid var(--c-blue-bd);
@@ -387,15 +382,12 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="sidebar-logo">
     <div class="logo-icon" style="background:transparent;padding:0">
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Fundo circular -->
         <circle cx="18" cy="18" r="17" fill="#1A2E1A" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-        <!-- Folha de Ipê - pétalas -->
         <ellipse cx="18" cy="12" rx="3.5" ry="6" fill="#F5A623" transform="rotate(0 18 18)"/>
         <ellipse cx="18" cy="12" rx="3.5" ry="6" fill="#E8941A" transform="rotate(72 18 18)"/>
         <ellipse cx="18" cy="12" rx="3.5" ry="6" fill="#F5A623" transform="rotate(144 18 18)"/>
         <ellipse cx="18" cy="12" rx="3.5" ry="6" fill="#E8941A" transform="rotate(216 18 18)"/>
         <ellipse cx="18" cy="12" rx="3.5" ry="6" fill="#F5A623" transform="rotate(288 18 18)"/>
-        <!-- Centro -->
         <circle cx="18" cy="18" r="3.5" fill="#1A2E1A"/>
         <circle cx="18" cy="18" r="2" fill="#F5C842"/>
       </svg>
@@ -549,7 +541,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-icon">⏳</div>
       <div class="kpi-label">Em Fila</div>
       <div class="kpi-value" id="kv-fila">—</div>
-      <div class="kpi-sub">próximas a fazer</div>
+      <div class="kpi-sub">a fazer + suspensas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
     </div>
     <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
@@ -563,12 +555,12 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-icon">📦</div>
       <div class="kpi-label">Backlog</div>
       <div class="kpi-value" id="kv-backlog">—</div>
-      <div class="kpi-sub">em espera</div>
+      <div class="kpi-sub">em fila</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
     </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
-      <div class="kpi-label">Em Desenvolvimento</div>
+      <div class="kpi-label">Em Desenvolv.</div>
       <div class="kpi-value" id="kv-dev">—</div>
       <div class="kpi-sub">em andamento</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-dev"></div></div>
@@ -621,7 +613,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Previsões / Entregas</div><span class="chart-badge" id="tot-orig"></span></div>
         <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
@@ -637,13 +629,13 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-<div class="charts-row">
+  <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Demandas por Sprint</div>
+        <div class="chart-title">Demandas na Esteira</div>
         <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição por sprint · clique numa fatia para filtrar</div>
+      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
       <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
       <div class="hint-box">
         <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
@@ -651,7 +643,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       </div>
     </div>
   </div>
-
 
   <div class="table-card">
     <div class="tcard-header">
@@ -665,6 +656,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#2563EB;display:inline-block;flex-shrink:0"></span>No prazo previsto</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;display:inline-block;flex-shrink:0"></span>Fora do prazo previsto</span>
         </div>
+        <span class="tcard-count" id="rc-prev"></span>
       </div>
     </div>
     <div class="tw" style="max-height:320px;overflow-y:auto"><table>
@@ -679,8 +671,20 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Prev. Prod</th>
         <th>Entrega Requisito</th>
       </tr></thead>
-      <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
+      <tbody id="tb-prev"><tr class="loading-row"><td colspan="9"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
+  </div>
+
+  <!-- Demandas por Origem separado abaixo da tabela -->
+  <div class="charts-row full" style="margin-top:0">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig2"></span></div>
+        <button class="chart-clear-btn" id="clr-origem2" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cOrigem2" role="img" aria-label="Demandas por origem 2"></canvas></div>
+    </div>
   </div>
 
 </div>
@@ -805,13 +809,12 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th onclick="srt('req','Status')">Status <span class="si">↕</span></th>
         <th>Sprint</th>
         <th onclick="srt('req','Solicitante')">Solicitante <span class="si">↕</span></th>
-        <th>Entrega Requisito</th>
+        <th>Entrega Prod</th>
       </tr></thead>
       <tbody id="tb-req"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
   </div>
 </div>
-
 
 <!-- ===== PAGE 5: ANÁLISE PRODUTO PIPEFY ===== -->
 <div id="page-pipefy" class="page active">
@@ -828,13 +831,11 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 
   <div id="pipefy-error" class="err-banner" style="display:none"></div>
 
-  <!-- Pill filtro gráfico -->
   <div class="filter-pill" id="fp-pipefy" style="background:var(--c-teal-bg);border-color:var(--c-teal-bd);color:var(--c-teal)">
     <span id="fp-pipefy-txt"></span>
     <button onclick="clearPipefyFilter()" style="color:var(--c-teal)">✕ Limpar filtro do gráfico</button>
   </div>
 
-  <!-- KPIs -->
   <div class="kpi-row" id="pipefy-kpis">
     <div class="kpi-card kpi-blue" onclick="clearPipefyFilter()" title="Limpar filtros">
       <div class="kpi-icon">📥</div>
@@ -843,7 +844,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">em análise</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--c-blue)"></div></div>
     </div>
-
     <div class="kpi-card kpi-emerald" onclick="applyPipefyFilter('ben','Sim')" title="Filtrar por: Beneficia outros = Sim">
       <div class="kpi-icon">✅</div>
       <div class="kpi-label">Beneficia outros</div>
@@ -860,7 +860,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <!-- Gráficos -->
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
@@ -880,7 +879,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <!-- Gráfico Tipo de Cliente -->
   <div class="charts-row full">
     <div class="chart-card">
       <div class="chart-header">
@@ -892,7 +890,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <!-- Filtros -->
   <div class="filters-bar">
     <div class="fg"><div class="fl">Funcionalidade</div><select id="pp-fFunc"><option value="">Todas</option></select></div>
     <div class="fg"><div class="fl">Beneficia outros?</div><select id="pp-fBen"><option value="">Todas</option><option>Sim</option><option>Não</option></select></div>
@@ -900,7 +897,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="fg wide"><div class="fl">Buscar sugestão, cliente, colaborador...</div><input type="text" id="pp-fQ" placeholder="Digite para filtrar..."></div>
   </div>
 
-  <!-- Tabela -->
   <div class="table-card">
     <div class="tcard-header">
       <div>
@@ -941,10 +937,9 @@ let KF={viaveis:'',inviaveis:''};
 let yearFilter=String(new Date().getFullYear());
 let reqYearFilter=String(new Date().getFullYear());
 let reqMonthFilter=null;
-let chartFilter={status:'',sprint:'',month:null,origem:'',naoPlan:null}; // filtro ativo pelos gráficos
+let chartFilter={status:'',sprint:'',month:null,origem:'',naoPlan:null};
 
 function applyChartFilter(type, value){
-  // Toggle: clicar no mesmo valor limpa o filtro
   if(type==='month'){
     chartFilter.month = chartFilter.month===value ? null : value;
   } else {
@@ -979,10 +974,12 @@ function updateChartClearBtns(){
   const clrS=document.getElementById('clr-sprint');
   const clrM=document.getElementById('clr-month');
   const clrO=document.getElementById('clr-origem');
+  const clrO2=document.getElementById('clr-origem2');
   const clrNP=document.getElementById('clr-nao-plan');
   if(clrS) clrS.style.display=chartFilter.sprint?'inline-flex':'none';
   if(clrM) clrM.style.display=(chartFilter.month!==null&&chartFilter.month!==undefined)?'inline-flex':'none';
   if(clrO) clrO.style.display=chartFilter.origem?'inline-flex':'none';
+  if(clrO2) clrO2.style.display=chartFilter.origem?'inline-flex':'none';
   if(clrNP) clrNP.style.display=(chartFilter.naoPlan!==null&&chartFilter.naoPlan!==undefined)?'inline-flex':'none';
 }
 
@@ -1007,12 +1004,10 @@ function toggleTheme(){
   document.getElementById('themeIcon').textContent=isDark?'🌙':'☀️';
   document.getElementById('themeLabel').textContent=isDark?'Modo escuro':'Modo claro';
   localStorage.setItem('theme',next);
-  // Destruir todos os charts para rebuildar com novas cores
   Object.values(ch).forEach(c=>{try{c.destroy();}catch(e){}});
   ch={};
   setTimeout(()=>{updateP1(getVF());updateP3(getReqF());},50);
 }
-// Init theme
 (()=>{
   const saved=localStorage.getItem('theme')||'light';
   document.documentElement.setAttribute('data-theme',saved);
@@ -1024,13 +1019,13 @@ function toggleTheme(){
 
 function setYearFilter(year){
   yearFilter=year;
-  chartFilter.month=null; // limpar filtro de mês ao trocar ano
+  chartFilter.month=null;
   document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('ybtn-'+year).classList.add('active');
   const label=year==='all'?'Todos os anos':year;
   document.getElementById('entregasSub')&&(document.getElementById('entregasSub').textContent=`Entregas em produção — ${label} — valores exibidos sobre cada ponto`);
   updateChartClearBtns();
-  updateP1(getVF()); // atualiza cards + todos os gráficos com dados filtrados por ano
+  updateP1(getVF());
 }
 
 function setReqYear(year){
@@ -1085,7 +1080,6 @@ function buildEntMes(data,year){
 function rebuildEntregas(entM,color){
   if(ch.ent)ch.ent.destroy();
   const activeMonth=chartFilter.month;
-  // Destacar mês selecionado nos pontos
   const ptColors=entM.map((_,i)=>{
     if(activeMonth===null||activeMonth===undefined) return color;
     return i===activeMonth ? color : color+'66';
@@ -1108,7 +1102,6 @@ function rebuildEntregas(entM,color){
       },
       onClick(evt,els){
         if(!els.length){
-          // Clique fora dos pontos — tenta detectar o mês pelo eixo X
           const xScale=ch.ent.scales.x;
           const xVal=xScale.getValueForPixel(evt.x);
           const idx=Math.round(xVal);
@@ -1126,7 +1119,6 @@ function rebuildEntregas(entM,color){
     plugins:[numPlugin]
   });
 }
-
 
 function showPage(n){
   const pageEl=document.getElementById('page-'+n);
@@ -1201,7 +1193,6 @@ function cBadge(c){
   return`<span class="badge b-other">${c}</span>`;
 }
 
-// Chart colors based on theme
 function gc(){
   const d=document.documentElement.getAttribute('data-theme')==='dark';
   return d?
@@ -1211,7 +1202,6 @@ function gc(){
 function gt(){return document.documentElement.getAttribute('data-theme')==='dark'?'#94A3B8':'#6B7280';}
 function gbg(){return document.documentElement.getAttribute('data-theme')==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)';}
 
-// Data labels plugin — posiciona label dentro da área do gráfico, sem cortar
 const numPlugin={
   afterDatasetsDraw(chart){
     const ctx=chart.ctx;
@@ -1224,15 +1214,12 @@ const numPlugin={
       ctx.save();
       ctx.font='600 11px Inter,sans-serif';
       if(isH){
-        // Barra horizontal: label à direita da barra, dentro da área
         const x=Math.min(meta.x+7, area.right-20);
         ctx.fillStyle=gt();
         ctx.textAlign='left';ctx.textBaseline='middle';
         ctx.fillText(val,x,meta.y);
       } else {
-        // Linha/barra vertical: label acima do ponto, com padding mínimo do topo
         const labelY=Math.max(meta.y-10, area.top+12);
-        // Fundo branco/escuro para melhor legibilidade
         const txt=String(val);
         const tw=ctx.measureText(txt).width;
         ctx.fillStyle=cl||gt();
@@ -1244,7 +1231,11 @@ const numPlugin={
   }
 };
 
-// KPI filter
+// =====================================================
+// FIX: fKpi agora passa ignoreYear=true para status
+// que não dependem de data (Teste, Dev, Suspensa, Backlog)
+// e também passa o data filtrado para updateP1
+// =====================================================
 function fKpi(page,val){
   KF[page]=val;
   const fp=document.getElementById('fp-'+page[0]);
@@ -1252,19 +1243,28 @@ function fKpi(page,val){
   if(val){fp.classList.add('show');ft.textContent='Filtro: '+(val==='fila'?'Em Fila (A Fazer)':val==='entregue'?'Entregues':val);}
   else fp.classList.remove('show');
   if(page==='viaveis'){
+    // Limpa filtros de gráfico ao clicar num KPI card
     chartFilter.status='';chartFilter.sprint='';
     updateChartFilterPill();updateChartClearBtns();_rowCache=[];
-    const ignoreYear=val&&val!=='entregue';
+    // ignoreYear=true para todos os status que não dependem de data de entrega
+    // Apenas 'entregue' deve respeitar o filtro de ano
+    const ignoreYear = val !== 'entregue';
     updateP1(getVF(ignoreYear));
   } else updateP2(getTF());
 }
 
-// Filters
+// =====================================================
+// FIX PRINCIPAL: getVF agora só aplica filtro de ano
+// quando NÃO há filtro de KPI ativo que ignore o ano,
+// e o parâmetro ignoreYear é passado corretamente
+// =====================================================
 function getVF(ignoreYear){
   const fS=document.getElementById('v-fS').value,fSol=document.getElementById('v-fSol').value;
   const fSp=document.getElementById('v-fSp').value,fD=document.getElementById('v-fD').value;
   const fA=document.getElementById('v-fA').value,fQ=document.getElementById('v-fQ').value.toLowerCase();
   const kpi=KF.viaveis;
+  // Se há filtro KPI que não seja 'entregue', ignora filtro de ano
+  const shouldIgnoreYear = ignoreYear === true || (kpi && kpi !== 'entregue');
   return allData.filter(r=>{
     if(fS&&r['Status']!==fS)return false;
     if(fSol&&r['Solicitante']!==fSol)return false;
@@ -1279,7 +1279,6 @@ function getVF(ignoreYear){
       if(kpi==='backlog'&&!u.includes('BACKLOG'))return false;
       if(kpi!=='fila'&&kpi!=='entregue'&&kpi!=='backlog'&&!u.includes(kpi.toUpperCase()))return false;
     }
-    // Filtros dos gráficos interativos
     if(chartFilter.status&&r['Status']!==chartFilter.status)return false;
     if(chartFilter.sprint){const sp=r['Sprint']||'À Definir';if(sp!==chartFilter.sprint)return false;}
     if(chartFilter.origem&&(r['Origem']||'')!==chartFilter.origem)return false;
@@ -1289,7 +1288,8 @@ function getVF(ignoreYear){
       const setorNP=chartFilter.naoPlan==='naoPlan'?'':chartFilter.naoPlan;
       if(setorNP&&!np.includes(setorNP.toLowerCase()))return false;
     }
-    if(!ignoreYear&&yearFilter&&yearFilter!=='all'){
+    // Filtro de ano: só aplica se não estiver ignorando o ano
+    if(!shouldIgnoreYear&&yearFilter&&yearFilter!=='all'){
       const ep=r['Entrega em Produção']||'';
       const sd=r['Start Date']||'';
       const matchYear=(dateStr)=>{
@@ -1298,8 +1298,6 @@ function getVF(ignoreYear){
         if(p.length>=3){const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}
         return false;
       };
-      // Só filtra por ano se tiver pelo menos uma data preenchida
-      // Demandas sem data (A FAZER, BACKLOG, etc.) sempre aparecem
       const temData=ep||sd;
       if(temData&&!matchYear(ep)&&!matchYear(sd))return false;
     }
@@ -1314,6 +1312,7 @@ function getVF(ignoreYear){
     return true;
   });
 }
+
 function getTF(){
   const fT=document.getElementById('i-fT').value,fS=document.getElementById('i-fS').value;
   const fC=document.getElementById('i-fC').value,fQ=document.getElementById('i-fQ').value.toLowerCase();
@@ -1393,31 +1392,19 @@ function closeModal(e){if(e.target===document.getElementById('modalOverlay'))clo
 function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
 
-// Row click helper — usa índice em array para evitar problemas com chars especiais
-// Caches totalmente isolados por tabela — NUNCA compartilhados
-let _rowCache=[];       // legado (não mais usado)
-let _cachePrev=[];      // tb-prev  (Previsões/Entregas)
-let _cacheDet=[];       // tb-det   (Detalhes Demandas) — não mais usado
-let _cacheReq=[];       // tb-req   (Requisitos)
-let _cacheInv=[];       // tb-inv   (Inviáveis)
-let _cacheSprint=[];    // tb-sprint (Sprint)
-let _cachePipefy=[];    // tb-pipefy (Pipefy)
+let _rowCache=[];
+let _cachePrev=[];
+let _cacheDet=[];
+let _cacheReq=[];
+let _cacheInv=[];
+let _cacheSprint=[];
+let _cachePipefy=[];
+
 function mkR(r,type){
   const idx=_rowCache.push({r,type})-1;
   return`<tr onclick="_openFromCache(${idx})" style="cursor:pointer">`;
 }
-function _openFromCache(idx){
-  const {r,type}=_rowCache[idx];
-  if(type==='sprint') openSprintModal(r);
-  else if(type==='pipefy') openPipefyModal(r);
-  else openModal(r,type);
-}
 
-// =====================================================
-// FUNÇÕES DEDICADAS POR TABELA — COMPLETAMENTE ISOLADAS
-// Cada função lê APENAS do seu próprio cache
-// Nunca interferem umas com as outras
-// =====================================================
 function _openPrevFromCache(idx){
   const r = _cachePrev[idx];
   if(r) openModal(r,'viavel');
@@ -1438,7 +1425,6 @@ function _openPipefyFromCache(idx){
   const r = _cachePipefy[idx];
   if(r) openPipefyModal(r);
 }
-// _openFromCache legado — não mais usado pelas tabelas principais
 function _openFromCache(idx){
   const item = _rowCache[idx];
   if(!item) return;
@@ -1521,7 +1507,12 @@ function _removePipefyDevolutiva(id){
   openPipefyModal(_cachePipefy.find(c=>String(c.id)===String(id)));
 }
 
-// ===== PAGE 1 =====
+// =====================================================
+// FIX PRINCIPAL — updateP1
+// Gráfico "Demandas por Origem" agora usa o parâmetro
+// `data` (já filtrado pelo KPI) em vez de allData.
+// Assim, clicar em "Em Teste" reflete no gráfico.
+// =====================================================
 function updateP1(data){
    const total=(!yearFilter||yearFilter==='all')?allData.length:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter).length;
    const totalAll=allData.length;
@@ -1550,7 +1541,6 @@ function updateP1(data){
      document.getElementById('kv-bar-teste').style.width=Math.round(nTeste/refBase*100)+'%';
      document.getElementById('kv-bar-suspensa').style.width=Math.round(nSus/refBase*100)+'%';
    }
-   // Destacar KPI card ativo
    ['kv-c-total','kv-c-fila','kv-c-entregue','kv-c-backlog','kv-c-dev','kv-c-teste','kv-c-suspensa'].forEach(id=>document.getElementById(id)?.classList.remove('kpi-active'));
    if(chartFilter.status){
      const u=chartFilter.status.toUpperCase();
@@ -1560,34 +1550,55 @@ function updateP1(data){
      else if(u.includes('FAZER')||u.includes('BACKLOG'))document.getElementById('kv-c-fila')?.classList.add('kpi-active');
      else if(u.includes('FEITO')||u.includes('PRODU')||u.includes('DONE'))document.getElementById('kv-c-entregue')?.classList.add('kpi-active');
    }
-   if(KF.viaveis==='fila')document.getElementById('kv-c-fila')?.classList.add('kpi-active');
-   if(KF.viaveis==='entregue')document.getElementById('kv-c-entregue')?.classList.add('kpi-active');
-   if(KF.viaveis==='backlog')document.getElementById('kv-c-backlog')?.classList.add('kpi-active');
+   const kpiMap={'fila':'kv-c-fila','entregue':'kv-c-entregue','backlog':'kv-c-backlog','DESENVOLVIMENTO':'kv-c-dev','TESTE':'kv-c-teste','SUSPENSA':'kv-c-suspensa'};
+   if(KF.viaveis&&kpiMap[KF.viaveis])document.getElementById(kpiMap[KF.viaveis])?.classList.add('kpi-active');
+   else if(!KF.viaveis)document.getElementById('kv-c-total')?.classList.add('kpi-active');
 
   const colors=gc();
 
-  // ===== GRÁFICO: ORIGEM =====
-  const origData=(!yearFilter||yearFilter==='all')?allData:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter);
-  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+origData.length;
-  const origMap={};origData.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
+  // =====================================================
+  // FIX: Gráfico Demandas por Origem usa `data` filtrado
+  // pelo KPI, não mais allData direto
+  // =====================================================
+  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+data.length;
+  const elTotOrig2=document.getElementById('tot-orig2');if(elTotOrig2)elTotOrig2.textContent='Total: '+data.length;
+  const origMap={};
+  data.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
   const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
   const origBg=origL.map((l,i)=>{
     if(chartFilter.origem&&chartFilter.origem===l)return colors[i%colors.length]+'EE';
     if(chartFilter.origem&&chartFilter.origem!==l)return colors[i%colors.length]+'22';
     return colors[i%colors.length]+'66';
   });
+
+  // Renderiza gráfico de origem inline (na seção de charts)
   if(ch.orig)ch.orig.destroy();
   ch.orig=new Chart(document.getElementById('cOrigem'),{
     type:'bar',
     data:{labels:origL,datasets:[{data:origL.map(l=>origMap[l]),backgroundColor:origBg,borderColor:origL.map((_,i)=>colors[i%colors.length]),borderWidth:origL.map(l=>chartFilter.origem===l?3:1.5),borderRadius:5}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.parsed.x} demandas${chartFilter.origem===origL[ctx.dataIndex]?' \u2713 filtro ativo':' (clique)'}`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.parsed.x} demandas${chartFilter.origem===origL[ctx.dataIndex]?' ✓ filtro ativo':' (clique)'}`}}},
       onClick(evt,els){if(!els.length)return;const lbl=origL[els[0].index];chartFilter.origem=chartFilter.origem===lbl?'':lbl;KF.viaveis='';document.getElementById('fp-v').classList.remove('show');updateChartFilterPill();updateChartClearBtns();_rowCache=[];updateP1(getVF());},
       scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
     },plugins:[numPlugin]
   });
 
-  // ===== GRÁFICO: NÃO PLANEJADAS POR MÊS E SETOR =====
+  // Renderiza gráfico de origem 2 (abaixo da tabela) — mesmo dataset
+  if(ch.orig2)ch.orig2.destroy();
+  const cOrigem2El = document.getElementById('cOrigem2');
+  if(cOrigem2El){
+    ch.orig2=new Chart(cOrigem2El,{
+      type:'bar',
+      data:{labels:origL,datasets:[{data:origL.map(l=>origMap[l]),backgroundColor:origBg,borderColor:origL.map((_,i)=>colors[i%colors.length]),borderWidth:origL.map(l=>chartFilter.origem===l?3:1.5),borderRadius:5}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.parsed.x} demandas${chartFilter.origem===origL[ctx.dataIndex]?' ✓ filtro ativo':' (clique)'}`}}},
+        onClick(evt,els){if(!els.length)return;const lbl=origL[els[0].index];chartFilter.origem=chartFilter.origem===lbl?'':lbl;KF.viaveis='';document.getElementById('fp-v').classList.remove('show');updateChartFilterPill();updateChartClearBtns();_rowCache=[];updateP1(getVF());},
+        scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+      },plugins:[numPlugin]
+    });
+  }
+
+  // ===== GRÁFICO: NÃO PLANEJADAS =====
   const naoPlanData=data.filter(r=>(r['Ordem de Desenvolv.']||'').toLowerCase().includes('n\u00e3o planejado'));
   const setores={};
   naoPlanData.forEach(r=>{
@@ -1627,7 +1638,7 @@ function updateP1(data){
     });
   }
 
-
+  // ===== GRÁFICO: SPRINT (usa data filtrado) =====
   const spMap={};data.forEach(r=>{const s=r['Sprint']||'À Definir';spMap[s]=(spMap[s]||0)+1;});
   const spL=Object.keys(spMap);
   if(ch.sp)ch.sp.destroy();
@@ -1654,18 +1665,21 @@ function updateP1(data){
     }
   });
 
-  const entM=buildEntMes(data,yearFilter);
+  // Gráfico entregas — usa allData filtrado por ano (não por KPI)
+  const entData = KF.viaveis ? allData : data;
+  const entM=buildEntMes(entData,yearFilter);
   const totEnt=entM.reduce((a,b)=>a+b,0);const elTotEnt=document.getElementById('tot-ent');if(elTotEnt)elTotEnt.textContent=totEnt?`Total: ${totEnt}`:'';
   rebuildEntregas(entM,colors[yearFilter==='2025'?1:0]);
 
+  // ===== TABELA PREVISÕES/ENTREGAS (usa data filtrado) =====
   const dk='Demanda / Tarefa / Projeto';
   const mesLabel = chartFilter.month!==null&&chartFilter.month!==undefined ? ` — ${MESES_F[chartFilter.month]}` : '';
-  const anoLabel = yearFilter&&yearFilter!=='all' ? ` — ${yearFilter}` : '';
-  const _rcPrev=document.getElementById('rc-prev');if(_rcPrev)_rcPrev.textContent=`${data.length} itens${anoLabel}${mesLabel}`;
+  const anoLabel = yearFilter&&yearFilter!=='all'&&!KF.viaveis ? ` — ${yearFilter}` : '';
+  const kpiLabel = KF.viaveis ? ` — Filtro: ${KF.viaveis==='fila'?'Em Fila':KF.viaveis==='entregue'?'Entregues':KF.viaveis==='backlog'?'Backlog':KF.viaveis}` : '';
+  const _rcPrev=document.getElementById('rc-prev');if(_rcPrev)_rcPrev.textContent=`${data.length} itens${anoLabel}${kpiLabel}${mesLabel}`;
   _cachePrev=[];
   document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{
     const _ip=_cachePrev.push(r)-1;
-    // Função para colorir datas: vermelho se entrega > previsão, verde se <= previsão
     function dateCor(entrega,previsao){
       if(!entrega||entrega==='—')return 'color:var(--text3)';
       if(entrega.toLowerCase().includes('definir'))return 'color:var(--text2)';
@@ -1691,8 +1705,7 @@ function updateP1(data){
       <td style="font-size:11px;white-space:nowrap;${dateCor(entDev,prevDev)}">${entDev}</td>
       <td style="font-size:11px;white-space:nowrap;color:var(--text2)">${prevProd}</td>
       <td style="font-size:11px;white-space:nowrap;${dateCor(entProd,prevProd)}">${entProd}</td>
-    </tr>`;}).join(''):'<tr><td colspan="7" class="empty">Nenhuma demanda encontrada</td></tr>';
-
+    </tr>`;}).join(''):'<tr><td colspan="9" class="empty">Nenhuma demanda encontrada</td></tr>';
 }
 
 // ===== PAGE 2 =====
@@ -1728,8 +1741,6 @@ function updateP2(data){
 function updateP3(data){
   const colors=gc();
   const year=reqYearFilter;
-
-  // Gráfico unificado
   const reqMes=buildReqMes(data,year);
   const total=reqMes.reduce((a,b)=>a+b,0);
   const label=year==='all'?'Todos os anos':year;
@@ -1737,7 +1748,6 @@ function updateP3(data){
   document.getElementById('req-chart-sub')&&(document.getElementById('req-chart-sub').textContent=`Requisitos entregues em produção — ${label} — valores sobre os pontos`);
 
   const color=year==='2025'?colors[1]:colors[0];
-  const activeMonth=null; // requisitos não tem filtro de mês por enquanto
   if(ch.reqUnif)ch.reqUnif.destroy();
   ch.reqUnif=new Chart(document.getElementById('cReqUnif'),{
     type:'line',
@@ -1759,13 +1769,12 @@ function updateP3(data){
     plugins:[numPlugin]
   });
 
-  // Tabela
   const dk='Demanda / Tarefa / Projeto';
   document.getElementById('rc-req')&&(document.getElementById('rc-req').textContent=`${data.length} itens`);
   _cacheReq=[];
   document.getElementById('tb-req').innerHTML=data.length?data.map(r=>{const _ir=_cacheReq.push(r)-1;return `<tr onclick="_openReqFromCache(${_ir})" style="cursor:pointer"><td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td><td style="font-size:11px;color:var(--text3)">${r['Ano']||'—'}</td><td><span class="trunc">${r[dk]||'—'}</span></td><td>${sBadge(r['Status'])}</td><td style="font-size:11px">${r['Sprint']||'—'}</td><td><span class="trunc">${r['Solicitante']||'—'}</span></td><td style="font-size:11px;white-space:nowrap;color:var(--text2)">${r['Entrega em Produção']||'—'}</td></tr>`;}).join(''):'<tr><td colspan="7" class="empty">Nenhuma demanda encontrada</td></tr>';
 }
-// Sort
+
 function srt(t,col){
   const st=SS[t];if(st.c===col)st.a=!st.a;else{st.c=col;st.a=true;}
   const rc=col==='dem'?'Demanda / Tarefa / Projeto':col;
@@ -1773,7 +1782,6 @@ function srt(t,col){
   if(t==='req')updateP3(data);else updateP1(data);
 }
 
-// Populate filters
 function popF(data,triagem){
   const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
   const fill=(id,vals)=>{const s=document.getElementById(id);if(!s)return;const c=s.value;s.innerHTML='<option value="">Todos</option>'+vals.map(v=>`<option ${v===c?'selected':''}>${v}</option>`).join('');};
@@ -1782,23 +1790,6 @@ function popF(data,triagem){
   fill('r-fSp',u(data,'Sprint'));fill('r-fS',u(data,'Status'));fill('r-fSol',u(data,'Solicitante'));
   if(triagem.length){fill('i-fT',u(triagem,'Triagem'));fill('i-fS',u(triagem,'Status'));fill('i-fC',u(triagem,'Colab'));}
 }
-
-// Load
-
-
-// Parseia CSV de uma aba Sprint
-// Estrutura real: Linha 1 = período + cabeçalhos, Linha 2+ = dados
-
-
-
-
-
-
-
-
-
-
-
 
 function getSprintFiltered(idx){
   const sp = allSprintSheets[idx];
@@ -1812,28 +1803,15 @@ function getSprintFiltered(idx){
   });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// ===== ADMIN ACCESS CONTROL =====
+// ===== ADMIN =====
 const ADMIN_EMAIL = 'katiane@ipe.digital';
 const ADMIN_PASS = 'Katiane@2025';
 function isAdmin(){ try{return localStorage.getItem('admin_email')===ADMIN_EMAIL;}catch(e){return false;} }
 
 function applyAdminVisibility(){
   const ok = isAdmin();
-  // Botão exportar Excel
   const btnExp = document.getElementById('btn-export-xlsx');
   if(btnExp) btnExp.style.display = ok ? 'inline-flex' : 'none';
-  // Badge e toggle no sidebar
   const loginArea = document.getElementById('admin-login-area');
   const badgeArea = document.getElementById('admin-badge-area');
   const toggleBtn = document.getElementById('admin-toggle-btn');
@@ -1846,11 +1824,8 @@ function applyAdminVisibility(){
     if(badgeArea) badgeArea.style.display='none';
     if(toggleBtn) toggleBtn.style.display='flex';
   }
-  // Mostrar/esconder coluna Classificação no thead (Pipefy)
   const thCls = document.getElementById('th-classificacao');
   if(thCls) thCls.style.display = ok ? '' : 'none';
-
-  // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
 }
 
@@ -1889,12 +1864,10 @@ function doAdminLogout(){
   applyAdminVisibility();
 }
 
-// Inicializar ao carregar
 document.addEventListener('DOMContentLoaded', applyAdminVisibility);
 setTimeout(applyAdminVisibility, 100);
 
 // ===== PIPEFY =====
-// URL do proxy Google Apps Script — substitua após implantar
 let PIPEFY_PROXY_URL = '';
 const PIPEFY_DIRECT_TOKEN = 'eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJQaXBlZnkiLCJpYXQiOjE3NzcxMjA3ODAsImp0aSI6IjRkYjk3ODNkLTdhNGUtNDljMS1iZjE4LWQ1YzE5NzQ5ZDM0ZiIsInN1YiI6MzAwOTcwLCJ1c2VyIjp7ImlkIjozMDA5NzAsImVtYWlsIjoia2F0aWFuZUBpcGUuZGlnaXRhbCJ9LCJ1c2VyX3R5cGUiOiJhdXRoZW50aWNhdGVkIn0.zUPT8F1DdkIWNrqzF0Ui_aKWihitWPeyio22acHG-pe7B0PdPccwAyE2bKTCmnTRxoNp0B_14ZVuPFVYPGDMZA';
 const PIPEFY_PHASE_ID = '336178212';
@@ -1921,7 +1894,7 @@ function setPipefyDevolutiva(id,val){
   savePipefyDevolutiva();
 }
 let pipefySortState = {c:'', a:true};
-let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos
+let pipefyChartFilter = {func: '', ben: '', colab: ''};
 
 function getFieldVal(fields, name){
   const f = fields.find(f => f.name.toLowerCase().includes(name.toLowerCase()));
@@ -1974,7 +1947,6 @@ async function fetchPipefyPage(cursor){
     }
   }`;
 
-  // Se proxy configurado, usar proxy
   if(PIPEFY_PROXY_URL){
     const url = PIPEFY_PROXY_URL + (cursor ? '?cursor='+encodeURIComponent(cursor) : '');
     const r = await fetch(url);
@@ -1982,8 +1954,6 @@ async function fetchPipefyPage(cursor){
     return await r.json();
   }
 
-  // Sem proxy: tentar chamada direta (só funciona se o usuário estiver no mesmo browser)
-  // Usa corsproxy.io como fallback temporário para contornar CORS
   const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://api.pipefy.com/graphql');
   const r = await fetch(proxyUrl, {
     method: 'POST',
@@ -2065,7 +2035,6 @@ function getPipefyFiltered(){
       const hay = [c.title, getFieldVal(c.fields,'Registre'), getFieldVal(c.fields,'nome do cliente'), getFieldVal(c.fields,'Colaborador'), getFieldVal(c.fields,'Funcionalidade')].join(' ').toLowerCase();
       if(!hay.includes(fQ)) return false;
     }
-    // Filtros dos gráficos
     if(pipefyChartFilter.func && !func.toLowerCase().includes(pipefyChartFilter.func.toLowerCase())) return false;
     if(pipefyChartFilter.ben){
       const benNorm=ben.toLowerCase().includes('sim')?'Sim':ben.toLowerCase().includes('não')||ben.toLowerCase().includes('nao')?'Não':'Não informado';
@@ -2098,7 +2067,6 @@ function updatePipefyPage(cards){
   const colors = gc();
   const total = cards.length;
 
-  // KPIs
   document.getElementById('pp-total').textContent = total;
   const beneficia = cards.filter(c=>getFieldVal(c.fields,'beneficiar').toLowerCase().includes('sim')).length;
   document.getElementById('pp-beneficia').textContent = beneficia;
@@ -2114,7 +2082,6 @@ function updatePipefyPage(cards){
   const elTotBen=document.getElementById('tot-pipefy-ben');if(elTotBen)elTotBen.textContent='Total: '+total;
   const elTotColab=document.getElementById('tot-pipefy-colab');if(elTotColab)elTotColab.textContent='Total: '+total;
 
-  // Gráfico: Funcionalidades — com onClick interligado
   const funcMap = {};
   allPipefyCards.forEach(c=>{const f=getFieldVal(c.fields,'Funcionalidade')||'Não informado';funcMap[f]=(funcMap[f]||0)+1;});
   const fL = Object.keys(funcMap).sort((a,b)=>funcMap[b]-funcMap[a]).slice(0,10);
@@ -2139,7 +2106,6 @@ function updatePipefyPage(cards){
     plugins:[numPlugin]
   });
 
-  // Gráfico: Beneficia outros — com onClick interligado
   const benMap = {};
   allPipefyCards.forEach(c=>{const b=getFieldVal(c.fields,'beneficiar')||'Não informado';const k=b.toLowerCase().includes('sim')?'Sim':b.toLowerCase().includes('não')||b.toLowerCase().includes('nao')?'Não':'Não informado';benMap[k]=(benMap[k]||0)+1;});
   const bL = Object.keys(benMap);
@@ -2167,7 +2133,6 @@ function updatePipefyPage(cards){
     }
   });
 
-  // Gráfico: Tipo de Cliente
   const tipoOrder=['Diamante','Ouro','Prata','Bronze'];
   const colabMap={};
   cards.forEach(c=>{
@@ -2192,7 +2157,6 @@ function updatePipefyPage(cards){
     plugins:[numPlugin]
   });
 
-  // Tabela — usa cache dedicado para não conflitar com outras páginas
   _cachePipefy = [];
   document.getElementById('rc-pipefy').textContent = `${total} itens`;
   document.getElementById('tb-pipefy').innerHTML = total ? cards.map(c=>{
@@ -2239,7 +2203,6 @@ function updatePipefyPage(cards){
   }).join('') : '<tr><td colspan="8" class="empty">Nenhuma sugestão encontrada</td></tr>';
 }
 
-
 function exportPipefyXLSX(){
   if(!allPipefyCards.length){alert('Nenhum dado para exportar.');return;}
   const cols = [
@@ -2255,18 +2218,12 @@ function exportPipefyXLSX(){
     const dt=c.created_at?new Date(c.created_at).toLocaleDateString('pt-BR'):'';
     const ano=c.created_at?new Date(c.created_at).getFullYear():'';
     return {
-      'Criado em': dt,
-      'Ano': ano,
-      'Triagem': '',
-      'Código Pipe': id,
+      'Criado em': dt,'Ano': ano,'Triagem': '','Código Pipe': id,
       'Colab': fv('Colaborador')||(c.assignees?.[0]?.name)||'',
-      'Cliente': fv('nome do cliente'),
-      'ID': fv('ID do contrato'),
-      'Jira': '',
+      'Cliente': fv('nome do cliente'),'ID': fv('ID do contrato'),'Jira': '',
       'Título do Card': c.title||'',
       'Qual é o tempo de contrato?': fv('tempo de contrato'),
-      'Tipo do cliente': fv('Tipo do cliente'),
-      'Quantas Lojas?': fv('Lojas'),
+      'Tipo do cliente': fv('Tipo do cliente'),'Quantas Lojas?': fv('Lojas'),
       'Funcionalidade do Sistema': fv('Funcionalidade'),
       'Registre a sugestão de melhoria': fv('Registre'),
       'Como isso afeta o uso do sistema?': fv('afeta'),
@@ -2278,7 +2235,6 @@ function exportPipefyXLSX(){
     };
   });
   const ws = XLSX.utils.json_to_sheet(rows,{header:cols});
-  // Larguras das colunas
   ws['!cols']=[
     {wch:12},{wch:6},{wch:12},{wch:12},{wch:18},{wch:20},{wch:14},{wch:12},
     {wch:30},{wch:20},{wch:14},{wch:14},{wch:24},{wch:40},
@@ -2294,13 +2250,11 @@ function saveProxyUrl(){
   const input = document.getElementById('proxy-url-input');
   if(input && input.value.trim()){
     PIPEFY_PROXY_URL = input.value.trim();
-    // Salvar no localStorage para persistir
     try{ localStorage.setItem('pipefy_proxy_url', PIPEFY_PROXY_URL); }catch(e){}
     loadPipefy();
   }
 }
 
-// Carregar proxy URL do localStorage se existir
 (()=>{
   try{
     const saved = localStorage.getItem('pipefy_proxy_url');
@@ -2319,19 +2273,16 @@ function srtPipefy(col){
   updatePipefyPage(data);
 }
 
-// Event listeners Pipefy
 ['pp-fFunc','pp-fBen','pp-fTipo'].forEach(id=>{
   document.getElementById(id)?.addEventListener('change',()=>{ updatePipefyPage(getPipefyFiltered()); });
 });
 document.getElementById('pp-fQ')?.addEventListener('input',()=>{ updatePipefyPage(getPipefyFiltered()); });
 
-
 // ===== PRIORIZAÇÃO =====
 let allPrioData = [];
-let prioSortState = {c:'score', a:false}; // padrão: maior score no topo
+let prioSortState = {c:'score', a:false};
 let _cachePrio = [];
 
-// Pontuações salvas no localStorage
 let prioScores = {};
 try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e){}
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
@@ -2341,7 +2292,6 @@ function setPrioScore(id, val){
   updatePrio(getPrioFiltered());
 }
 
-// ===== MULTISELECT DEV RESP. =====
 let prioDevRespSelected = new Set();
 
 function togglePrioDevResp(e){
@@ -2349,7 +2299,6 @@ function togglePrioDevResp(e){
   const dd = document.getElementById('prio-devresp-dropdown');
   dd.classList.toggle('open');
 }
-// Fechar ao clicar fora
 document.addEventListener('click', e=>{
   const wrap = document.getElementById('prio-devresp-wrap');
   if(wrap && !wrap.contains(e.target)){
@@ -2367,7 +2316,6 @@ function updatePrioDevRespLabel(){
   if(!lbl) return;
   const s = prioDevRespSelected.size;
   lbl.textContent = s === 0 ? 'Todos' : s === 1 ? [...prioDevRespSelected][0] : `${s} selecionados`;
-  // Atualizar checkboxes
   document.querySelectorAll('#prio-devresp-dropdown .multiselect-option').forEach(opt=>{
     const cb = opt.querySelector('input[type=checkbox]');
     const checked = prioDevRespSelected.has(opt.dataset.val);
@@ -2404,7 +2352,6 @@ function getPrioFiltered(){
 }
 
 function updatePrio(data){
-  // Ordenar: com score primeiro (desc), depois sem score
   const withScore = data.filter(r=>{const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];return prioScores[id]!==undefined;});
   const withoutScore = data.filter(r=>{const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];return prioScores[id]===undefined;});
   withScore.sort((a,b)=>{
@@ -2471,7 +2418,6 @@ function popPrioFilters(){
   popPrioDevResp(u(allPrioData,'Dev Resp.'));
 }
 
-// Event listeners
 ['prio-fOrig','prio-fSol','prio-fCrit'].forEach(id=>{
   document.getElementById(id)?.addEventListener('change',()=>updatePrio(getPrioFiltered()));
 });
@@ -2485,27 +2431,23 @@ async function loadData(){
     allData=parseCSV(await r1.text());
     if(!allData.length)throw new Error('Planilha vazia ou sem dados');
     try{const r2=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=1213607434&t=${Date.now()}`);if(r2.ok)allTriagem=parseCSV(await r2.text());}catch(e){allTriagem=[];}
-    // Atualizar filtros dos dropdowns SEM resetar seleção atual
     popF(allData,allTriagem);
-    // Dados de priorização: Backlog e A Fazer
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
     popPrioFilters();
     updatePrio(getPrioFiltered());
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.querySelectorAll('[id^="lu"]').forEach(el=>el.textContent=`Atualizado às ${now}`);
     document.getElementById('err1').style.display='none';
-    // ⚠️ NÃO limpar filtros aqui — preservar estado do usuário
-    // Aplicar ano vigente na primeira carga, depois preservar seleção atual
     setYearFilter(yearFilter);
-     updateP2(getTF());
-     updateP3(getReqF());
+    updateP2(getTF());
+    updateP3(getReqF());
   }catch(e){
     const b=document.getElementById('err1');b.style.display='block';
     b.innerHTML=`<strong>Erro ao carregar dados.</strong> Verifique se a planilha está pública. <small style="opacity:.7">${e.message}</small>`;
   }
   document.querySelectorAll('.btn').forEach(b=>{if(b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizar';}b.disabled=false;});
 }
-// Events
+
 ['v-fS','v-fSol','v-fSp','v-fD','v-fA'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>updateP1(getVF())));
 document.getElementById('v-fQ')?.addEventListener('input',()=>updateP1(getVF()));
 ['i-fT','i-fS','i-fC'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>updateP2(getTF())));
@@ -2513,10 +2455,8 @@ document.getElementById('i-fQ')?.addEventListener('input',()=>updateP2(getTF()))
 ['r-fSp','r-fS','r-fSol'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>updateP3(getReqF())));
 document.getElementById('r-fQ')?.addEventListener('input',()=>updateP3(getReqF()));
 
-// Inicializar filtros de ano com o ano vigente
 (()=>{
   const curYear=String(new Date().getFullYear());
-  // Requisitos por período
   const rbtn=document.getElementById('rbtn-'+curYear);
   if(rbtn) rbtn.classList.add('active');
   else document.getElementById('rbtn-all')?.classList.add('active');

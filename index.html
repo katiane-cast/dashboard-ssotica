@@ -386,6 +386,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="nav-item active" data-page="pipefy" onclick="showPage('pipefy')">
       <span class="nav-icon">🎯</span><span>Melhorias em Triagem</span>
     </div>
+    <div class="nav-item" data-page="priorizacao" onclick="showPage('priorizacao')">
+      <span class="nav-icon">⭐</span><span>Melhorias em Priorização</span>
+    </div>
     <div class="nav-item" data-page="viaveis" onclick="showPage('viaveis')">
       <span class="nav-icon">📈</span><span>Melhorias Viáveis</span>
     </div>
@@ -438,6 +441,54 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 </div>
 
 <main class="main">
+
+<!-- ===== PAGE: PRIORIZAÇÃO ===== -->
+<div id="page-priorizacao" class="page">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">Melhorias em Priorização</div>
+      <div class="page-subtitle">Demandas em Backlog e A Fazer · clique para ver detalhes</div>
+    </div>
+    <div class="topbar-right">
+      <span class="last-update" id="lu-prio"></span>
+      <button class="btn" onclick="loadData()">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
+    <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
+    <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
+    <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="prio-fQ" placeholder="Demanda, Jira, ID contrato..."></div>
+  </div>
+
+  <div class="table-card">
+    <div class="tcard-header">
+      <div>
+        <div class="tcard-title">Backlog e A Fazer</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver detalhes · Ordenado por pontuação</div>
+      </div>
+      <span class="tcard-count" id="rc-prio"></span>
+    </div>
+    <div class="tw" style="max-height:520px;overflow-y:auto"><table>
+      <thead><tr>
+        <th>Jira</th>
+        <th>Ano Base</th>
+        <th onclick="srtPrio('dem')">Demanda <span class="si">↕</span></th>
+        <th>Qtd Lojas</th>
+        <th>ID Contrato</th>
+        <th>Classificação</th>
+        <th>Origem</th>
+        <th>Solicitante</th>
+        <th>Esforço</th>
+        <th>Criticidade</th>
+        <th>Ordem Desenvolv.</th>
+        <th id="th-prio-score" style="display:none;min-width:110px">Pontuação</th>
+      </tr></thead>
+      <tbody id="tb-prio"><tr class="loading-row"><td colspan="12"><span class="spin"></span>Carregando...</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
 
 <!-- ===== PAGE 1: VIÁVEIS ===== -->
 <div id="page-viaveis" class="page">
@@ -1751,9 +1802,12 @@ function applyAdminVisibility(){
     if(badgeArea) badgeArea.style.display='none';
     if(toggleBtn) toggleBtn.style.display='flex';
   }
-  // Mostrar/esconder coluna Classificação no thead
+  // Mostrar/esconder coluna Classificação no thead (Pipefy)
   const thCls = document.getElementById('th-classificacao');
   if(thCls) thCls.style.display = ok ? '' : 'none';
+  // Mostrar/esconder coluna Pontuação (Priorização)
+  const thScore = document.getElementById('th-prio-score');
+  if(thScore) thScore.style.display = ok ? '' : 'none';
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
 }
@@ -2229,6 +2283,118 @@ function srtPipefy(col){
 });
 document.getElementById('pp-fQ')?.addEventListener('input',()=>{ updatePipefyPage(getPipefyFiltered()); });
 
+
+// ===== PRIORIZAÇÃO =====
+let allPrioData = [];
+let prioSortState = {c:'score', a:false}; // padrão: maior score no topo
+let _cachePrio = [];
+
+// Pontuações salvas no localStorage
+let prioScores = {};
+try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e){}
+function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
+function setPrioScore(id, val){
+  if(val==='del'){delete prioScores[id];}else if(val!==''&&val!==null&&val!==undefined) prioScores[id]=parseInt(val);
+  else delete prioScores[id];
+  savePrioScores();
+  updatePrio(getPrioFiltered());
+}
+
+function getPrioFiltered(){
+  const fOrig=document.getElementById('prio-fOrig')?.value||'';
+  const fSol=document.getElementById('prio-fSol')?.value||'';
+  const fCrit=document.getElementById('prio-fCrit')?.value||'';
+  const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
+  return allPrioData.filter(r=>{
+    if(fOrig&&(r['Origem']||'')!==fOrig)return false;
+    if(fSol&&(r['Solicitante']||'')!==fSol)return false;
+    if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
+    if(fQ){
+      const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem']].join(' ').toLowerCase();
+      if(!h.includes(fQ))return false;
+    }
+    return true;
+  });
+}
+
+function updatePrio(data){
+  // Ordenar: com score primeiro (desc), depois sem score
+  const withScore = data.filter(r=>{const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];return prioScores[id]!==undefined;});
+  const withoutScore = data.filter(r=>{const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];return prioScores[id]===undefined;});
+  withScore.sort((a,b)=>{
+    const ia=a['Jira']||a['ID Contrato']||a['Demanda / Tarefa / Projeto'];
+    const ib=b['Jira']||b['ID Contrato']||b['Demanda / Tarefa / Projeto'];
+    return (prioScores[ib]||0)-(prioScores[ia]||0);
+  });
+  const sorted = [...withScore, ...withoutScore];
+
+  const rcEl=document.getElementById('rc-prio');
+  if(rcEl)rcEl.textContent=`${data.length} itens`;
+
+  // Mostrar/esconder coluna de pontuação
+  const thScore=document.getElementById('th-prio-score');
+  if(thScore)thScore.style.display=isAdmin()?'':'none';
+
+  const dk='Demanda / Tarefa / Projeto';
+  _cachePrio=[];
+  const tbody=document.getElementById('tb-prio');
+  if(!tbody)return;
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="12" class="empty">Nenhuma demanda encontrada</td></tr>';return;}
+
+  tbody.innerHTML=sorted.map(r=>{
+    const id=r['Jira']||r['ID Contrato']||r[dk];
+    const score=prioScores[id];
+    const idx=_cachePrio.push(r)-1;
+    const scoreCell=isAdmin()?`<td onclick="event.stopPropagation()" style="white-space:nowrap">
+      ${score!==undefined?`<span class="badge b-feito" style="margin-right:4px">${score}</span>`:''}
+      <select onchange="setPrioScore('${id}',this.value);this.value=''"
+        style="font-size:11px;height:26px;padding:0 4px;border-radius:6px;${score!==undefined?'':'width:90px'}"
+        title="Pontuar demanda">
+        <option value="">${score!==undefined?'↺ Trocar':'Pontuar...'}</option>
+        ${Array.from({length:16},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
+        ${score!==undefined?'<option value="del">✕ Remover</option>':''}
+      </select>
+    </td>`:'';
+    return `<tr onclick="_openPrioFromCache(${idx})" style="cursor:pointer${score!==undefined?';background:var(--c-blue-bg)':''}" title="${score!==undefined?'Pontuação: '+score:'Sem pontuação'}">
+      <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
+      <td style="font-size:11px;color:var(--text3)">${r['Ano Base']||'—'}</td>
+      <td><span class="trunc">${r[dk]||'—'}</span></td>
+      <td style="font-size:11px">${r['Qtd Lojas']||'—'}</td>
+      <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
+      <td>${r['Classificação']?`<span class="badge b-other" style="font-size:10px">${r['Classificação']}</span>`:'—'}</td>
+      <td style="font-size:11px">${r['Origem']||'—'}</td>
+      <td style="font-size:11px">${r['Solicitante']||'—'}</td>
+      <td style="font-size:11px">${r['Esforço']||'—'}</td>
+      <td>${r['Criticidade']?cBadge(r['Criticidade']):'—'}</td>
+      <td style="font-size:11px;max-width:160px"><span class="trunc" style="max-width:160px">${r['Ordem de Desenvolv.']||'—'}</span></td>
+      ${scoreCell}
+    </tr>`;
+  }).join('');
+}
+
+function _openPrioFromCache(idx){
+  const r=_cachePrio[idx];
+  if(r)openModal(r,'viavel');
+}
+
+function srtPrio(col){
+  updatePrio(getPrioFiltered());
+}
+
+function popPrioFilters(){
+  const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
+  const fill=(id,vals)=>{const s=document.getElementById(id);if(!s)return;const c=s.value;s.innerHTML='<option value="">Todas</option>'+vals.map(v=>`<option ${v===c?'selected':''}>${v}</option>`).join('');};
+  fill('prio-fOrig',u(allPrioData,'Origem'));
+  fill('prio-fSol',u(allPrioData,'Solicitante'));
+  fill('prio-fCrit',u(allPrioData,'Criticidade'));
+}
+
+// Event listeners
+['prio-fOrig','prio-fSol','prio-fCrit'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change',()=>updatePrio(getPrioFiltered()));
+});
+document.getElementById('prio-fQ')?.addEventListener('input',()=>updatePrio(getPrioFiltered()));
+
 async function loadData(){
   document.querySelectorAll('.btn').forEach(b=>{if(b.onclick?.toString().includes('loadData')||b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizando...';b.disabled=true;}});
   try{
@@ -2239,6 +2405,10 @@ async function loadData(){
     try{const r2=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=1213607434&t=${Date.now()}`);if(r2.ok)allTriagem=parseCSV(await r2.text());}catch(e){allTriagem=[];}
     // Atualizar filtros dos dropdowns SEM resetar seleção atual
     popF(allData,allTriagem);
+    // Dados de priorização: Backlog e A Fazer
+    allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
+    popPrioFilters();
+    updatePrio(getPrioFiltered());
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.querySelectorAll('[id^="lu"]').forEach(el=>el.textContent=`Atualizado às ${now}`);
     document.getElementById('err1').style.display='none';

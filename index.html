@@ -536,14 +536,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas na Esteira</div><span class="chart-badge" id="tot-esteira"></span></div>
-        <button class="chart-clear-btn" id="clr-esteira" onclick="clearChartType('status')" title="Limpar filtro de status" style="display:none">✕ Limpar</button>
-      </div>
-      <div class="chart-sub">Distribuição por status · clique numa barra para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cEsteira" role="img" aria-label="Demandas por status"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
         <div class="chart-title">Demandas por Sprint</div>
         <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
       </div>
@@ -862,12 +854,10 @@ function clearChartType(type){
 }
 
 function updateChartClearBtns(){
-  const clrE=document.getElementById('clr-esteira');
   const clrS=document.getElementById('clr-sprint');
   const clrM=document.getElementById('clr-month');
   const clrO=document.getElementById('clr-origem');
   const clrNP=document.getElementById('clr-nao-plan');
-  if(clrE) clrE.style.display=chartFilter.status?'inline-flex':'none';
   if(clrS) clrS.style.display=chartFilter.sprint?'inline-flex':'none';
   if(clrM) clrM.style.display=(chartFilter.month!==null&&chartFilter.month!==undefined)?'inline-flex':'none';
   if(clrO) clrO.style.display=chartFilter.origem?'inline-flex':'none';
@@ -1462,36 +1452,6 @@ function updateP1(data){
     });
   }
 
-  const sMap={};data.forEach(r=>{const s=r['Status']||'Sem status';sMap[s]=(sMap[s]||0)+1;});
-  const elTotEst=document.getElementById('tot-esteira');if(elTotEst)elTotEst.textContent='Total: '+data.length;
-  const sL=Object.keys(sMap).sort((a,b)=>sMap[b]-sMap[a]);
-  if(ch.est)ch.est.destroy();
-  const esBgColors=sL.map((l,i)=>{
-    if(chartFilter.status&&chartFilter.status===l) return colors[i%colors.length]+'EE';
-    if(chartFilter.status&&chartFilter.status!==l) return colors[i%colors.length]+'22';
-    return colors[i%colors.length]+'55';
-  });
-  const esBdColors=sL.map((l,i)=>colors[i%colors.length]);
-  const esBdWidth=sL.map(l=>chartFilter.status===l?3:1.5);
-  ch.est=new Chart(document.getElementById('cEsteira'),{
-    type:'bar',
-    data:{labels:sL,datasets:[{data:sL.map(l=>sMap[l]),backgroundColor:esBgColors,borderColor:esBdColors,borderWidth:esBdWidth,borderRadius:5}]},
-    options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      cursor:'pointer',
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas${chartFilter.status===sL[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}
-      },
-      onClick(evt,els){
-        if(!els.length)return;
-        const label=sL[els[0].index];
-        applyChartFilter('status',label);
-      },
-      scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:11},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:11},color:gt()},grid:{display:false}}}
-    },
-    plugins:[numPlugin]
-  });
 
   const spMap={};data.forEach(r=>{const s=r['Sprint']||'À Definir';spMap[s]=(spMap[s]||0)+1;});
   const spL=Object.keys(spMap);

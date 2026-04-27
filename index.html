@@ -1338,6 +1338,36 @@ function openPipefyModal(c){
     return f?.value || '—';
   };
   const date = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—';
+  const cardId = c.id;
+  const clsAtual = pipefyClass[cardId]||'';
+  const devAtual = pipefyDevolutiva[cardId]||'';
+  const isInviavel = clsAtual === 'Inviável';
+
+  const devSection = isInviavel ? `
+    <div class="ms" style="margin-top:12px;border:1px solid var(--c-rose-bd);border-radius:10px;padding:12px 14px;background:var(--c-rose-bg)">
+      <div class="ms-t" style="color:var(--c-rose);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span>Devolutiva ao Analista</span>
+        ${devAtual ? `<span style="display:flex;gap:6px">
+          <button onclick="document.getElementById('dev-edit-${cardId}').style.display='block';document.getElementById('dev-view-${cardId}').style.display='none'" title="Editar" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--c-blue)">✏️</button>
+          <button onclick="_removePipefyDevolutiva('${cardId}')" title="Remover devolutiva" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--c-rose)">🗑️</button>
+        </span>` : ''}
+      </div>
+      ${devAtual
+        ? `<div id="dev-view-${cardId}" style="font-size:13px;color:var(--text2);line-height:1.5">${devAtual}</div>
+           <div id="dev-edit-${cardId}" style="display:none">
+             <textarea id="dev-txt-${cardId}" style="width:100%;min-height:80px;font-family:'Inter',sans-serif;font-size:12px;padding:8px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);resize:vertical">${devAtual}</textarea>
+             <div style="display:flex;gap:6px;margin-top:6px">
+               <button onclick="_savePipefyDevolutiva('${cardId}')" class="btn" style="background:var(--c-rose-bg);color:var(--c-rose);border-color:var(--c-rose-bd);font-size:12px">💾 Salvar</button>
+               <button onclick="document.getElementById('dev-edit-${cardId}').style.display='none';document.getElementById('dev-view-${cardId}').style.display='block'" class="btn" style="font-size:12px">Cancelar</button>
+             </div>
+           </div>`
+        : `<div id="dev-edit-${cardId}">
+             <textarea id="dev-txt-${cardId}" placeholder="Digite a devolutiva ao analista..." style="width:100%;min-height:80px;font-family:'Inter',sans-serif;font-size:12px;padding:8px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);resize:vertical"></textarea>
+             <button onclick="_savePipefyDevolutiva('${cardId}')" class="btn" style="margin-top:6px;background:var(--c-rose-bg);color:var(--c-rose);border-color:var(--c-rose-bd);font-size:12px">💾 Salvar devolutiva</button>
+           </div>`
+      }
+    </div>` : '';
+
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-grid">
       <div class="mf"><div class="mf-l">Cliente</div><div class="mf-v">${fv('nome do cliente')}</div></div>
@@ -1348,14 +1378,29 @@ function openPipefyModal(c){
       <div class="mf"><div class="mf-l">Data de abertura</div><div class="mf-v">${date}</div></div>
       <div class="mf"><div class="mf-l">Beneficia outros?</div><div class="mf-v">${fv('beneficiar')}</div></div>
       <div class="mf"><div class="mf-l">Tipo de sugestão</div><div class="mf-v">${fv('Tipo de sugestão')}</div></div>
+      ${clsAtual ? `<div class="mf"><div class="mf-l">Classificação</div><div class="mf-v"><span class="badge ${{'Viável':'b-viavel','Inviável':'b-inviavel','Painel Estratégico':'b-teste','Devolvida':'b-duplicada'}[clsAtual]||'b-other'}">${clsAtual}</span></div></div>` : ''}
     </div>
     <div class="ms"><div class="ms-t">Sugestão de Melhoria</div><div class="ms-c">${fv('Registre')}</div></div>
     <div class="ms"><div class="ms-t">Solução Paliativa</div><div class="ms-c">${fv('paliativa')}</div></div>
     <div class="ms"><div class="ms-t">Classificação Produto</div><div class="ms-c">${fv('Classificação')}</div></div>
+    ${devSection}
     <div class="ms" style="margin-top:8px">
       <a href="https://app.pipefy.com/pipes/306026544/cards/${c.id}" target="_blank" style="color:var(--c-blue);font-size:13px">🔗 Abrir no Pipefy</a>
     </div>`;
   document.getElementById('modalOverlay').classList.add('open');
+}
+
+function _savePipefyDevolutiva(id){
+  const txt=document.getElementById('dev-txt-'+id);
+  if(!txt)return;
+  const val=txt.value.trim();
+  setPipefyDevolutiva(id,val);
+  openPipefyModal(_cachePipefy.find(c=>String(c.id)===String(id)));
+}
+function _removePipefyDevolutiva(id){
+  if(!confirm('Remover a devolutiva?'))return;
+  setPipefyDevolutiva(id,'');
+  openPipefyModal(_cachePipefy.find(c=>String(c.id)===String(id)));
 }
 
 // ===== PAGE 1 =====
@@ -1673,6 +1718,14 @@ function setPipefyClass(id,val){
   if(val)pipefyClass[id]=val;else delete pipefyClass[id];
   savePipefyClass();
   updatePipefyPage(getPipefyFiltered());
+}
+
+let pipefyDevolutiva = {};
+try{const sd=localStorage.getItem('pipefy_devolutiva');if(sd)pipefyDevolutiva=JSON.parse(sd);}catch(e){}
+function savePipefyDevolutiva(){try{localStorage.setItem('pipefy_devolutiva',JSON.stringify(pipefyDevolutiva));}catch(e){}}
+function setPipefyDevolutiva(id,val){
+  if(val&&val.trim())pipefyDevolutiva[id]=val.trim();else delete pipefyDevolutiva[id];
+  savePipefyDevolutiva();
 }
 let pipefySortState = {c:'', a:true};
 let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos

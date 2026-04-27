@@ -1393,8 +1393,9 @@ function updateP1(data){
   const colors=gc();
 
   // ===== GRÁFICO: ORIGEM =====
-  const origMap={};data.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
-  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+data.length;
+  const origData=data.filter(r=>!yearFilter||yearFilter==='all'||String(r['Ano Base']||'').trim()===yearFilter);
+  const origMap={};origData.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
+  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+origData.length;
   const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
   const origBg=origL.map((l,i)=>{
     if(chartFilter.origem&&chartFilter.origem===l)return colors[i%colors.length]+'EE';

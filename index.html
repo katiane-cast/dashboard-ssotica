@@ -739,13 +739,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">em análise</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--c-blue)"></div></div>
     </div>
-    <div class="kpi-card kpi-teal">
-      <div class="kpi-icon">🏢</div>
-      <div class="kpi-label">Clientes únicos</div>
-      <div class="kpi-value" id="pp-clientes">—</div>
-      <div class="kpi-sub">solicitantes</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="pp-bar-cli"></div></div>
-    </div>
+
     <div class="kpi-card kpi-emerald" onclick="applyPipefyFilter('ben','Sim')" title="Filtrar por: Beneficia outros = Sim">
       <div class="kpi-icon">✅</div>
       <div class="kpi-label">Beneficia outros</div>
@@ -766,7 +760,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Por Funcionalidade do Sistema</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Por Funcionalidade do Sistema</div><span class="chart-badge" id="tot-pipefy-func"></span></div>
         <button class="chart-clear-btn" id="clr-pipefy-func" onclick="applyPipefyFilter('func','')" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Clique numa barra para filtrar todos os dados</div>
@@ -774,11 +768,23 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Beneficia Outros Clientes?</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Beneficia Outros Clientes?</div><span class="chart-badge" id="tot-pipefy-ben"></span></div>
         <button class="chart-clear-btn" id="clr-pipefy-ben" onclick="applyPipefyFilter('ben','')" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Clique numa fatia para filtrar todos os dados</div>
       <div style="position:relative;height:220px"><canvas id="cPipefyBen" role="img" aria-label="Beneficia outros clientes"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Gráfico Colaborador -->
+  <div class="charts-row full">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Colaborador</div><span class="chart-badge" id="tot-pipefy-colab"></span></div>
+        <button class="chart-clear-btn" id="clr-pipefy-colab" onclick="applyPipefyFilter('colab','')" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por colaborador · clique para filtrar</div>
+      <div style="position:relative;height:200px"><canvas id="cPipefyColab" role="img" aria-label="Demandas por colaborador"></canvas></div>
     </div>
   </div>
 
@@ -1693,7 +1699,7 @@ const PIPEFY_PHASE_ID = '336178212';
 
 let allPipefyCards = [];
 let pipefySortState = {c:'', a:true};
-let pipefyChartFilter = {func: '', ben: ''}; // filtro ativo pelos gráficos
+let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos
 
 function getFieldVal(fields, name){
   const f = fields.find(f => f.name.toLowerCase().includes(name.toLowerCase()));
@@ -1707,7 +1713,7 @@ function applyPipefyFilter(type, value){
 }
 
 function clearPipefyFilter(){
-  pipefyChartFilter = {func:'', ben:''};
+  pipefyChartFilter = {func:'', ben:'', colab:''};
   updatePipefyFilterPill();
   updatePipefyPage(getPipefyFiltered());
 }
@@ -1723,6 +1729,9 @@ function updatePipefyFilterPill(){
   const clrB = document.getElementById('clr-pipefy-ben');
   if(clrF) clrF.style.display = pipefyChartFilter.func ? 'inline-flex' : 'none';
   if(clrB) clrB.style.display = pipefyChartFilter.ben  ? 'inline-flex' : 'none';
+  const clrC = document.getElementById('clr-pipefy-colab');
+  if(clrC) clrC.style.display = pipefyChartFilter.colab ? 'inline-flex' : 'none';
+  if(pipefyChartFilter.colab) parts.push('Colaborador: '+pipefyChartFilter.colab);
   if(parts.length){ pill.classList.add('show'); txt.textContent = 'Filtro ativo — '+parts.join(' · '); }
   else pill.classList.remove('show');
 }
@@ -1841,6 +1850,10 @@ function getPipefyFiltered(){
       const benNorm = ben.toLowerCase().includes('sim')?'Sim':ben.toLowerCase().includes('não')||ben.toLowerCase().includes('nao')?'Não':'Não informado';
       if(benNorm !== pipefyChartFilter.ben) return false;
     }
+    if(pipefyChartFilter.colab){
+      const colab = getFieldVal(c.fields,'Colaborador')||(c.assignees?.[0]?.name)||'';
+      if(colab !== pipefyChartFilter.colab) return false;
+    }
     return true;
   });
 }
@@ -1864,18 +1877,20 @@ function updatePipefyPage(cards){
 
   // KPIs
   document.getElementById('pp-total').textContent = total;
-  const clientes = new Set(cards.map(c=>getFieldVal(c.fields,'nome do cliente')).filter(Boolean));
-  document.getElementById('pp-clientes').textContent = clientes.size || '—';
   const beneficia = cards.filter(c=>getFieldVal(c.fields,'beneficiar').toLowerCase().includes('sim')).length;
   document.getElementById('pp-beneficia').textContent = beneficia;
   const funcs = new Set(cards.map(c=>getFieldVal(c.fields,'Funcionalidade')).filter(Boolean));
   document.getElementById('pp-funcs').textContent = funcs.size || '—';
 
   if(total>0){
-    document.getElementById('pp-bar-cli').style.cssText=`width:${Math.min(100,Math.round(clientes.size/total*100))}%;background:var(--c-teal)`;
     document.getElementById('pp-bar-ben').style.cssText=`width:${Math.round(beneficia/total*100)}%;background:var(--c-emerald)`;
     document.getElementById('pp-bar-func').style.cssText=`width:${Math.min(100,Math.round(funcs.size/10*100))}%;background:var(--c-violet)`;
   }
+
+  // Badges somatório
+  const elTotFunc=document.getElementById('tot-pipefy-func');if(elTotFunc)elTotFunc.textContent='Total: '+total;
+  const elTotBen=document.getElementById('tot-pipefy-ben');if(elTotBen)elTotBen.textContent='Total: '+total;
+  const elTotColab=document.getElementById('tot-pipefy-colab');if(elTotColab)elTotColab.textContent='Total: '+total;
 
   // Gráfico: Funcionalidades — com onClick interligado
   const funcMap = {};
@@ -1928,6 +1943,31 @@ function updatePipefyPage(cards){
         applyPipefyFilter('ben', bL[els[0].index]);
       }
     }
+  });
+
+  // Gráfico: Colaborador — com onClick interligado
+  const colabMap = {};
+  cards.forEach(c=>{const col=getFieldVal(c.fields,'Colaborador')||(c.assignees?.[0]?.name)||'Não informado';colabMap[col]=(colabMap[col]||0)+1;});
+  const cL = Object.keys(colabMap).sort((a,b)=>colabMap[b]-colabMap[a]);
+  const cBgColors = cL.map((l,i)=>{
+    if(pipefyChartFilter.colab && pipefyChartFilter.colab===l) return colors[i%colors.length]+'EE';
+    if(pipefyChartFilter.colab && pipefyChartFilter.colab!==l) return colors[i%colors.length]+'22';
+    return colors[i%colors.length]+'66';
+  });
+  if(ch.ppColab) ch.ppColab.destroy();
+  ch.ppColab = new Chart(document.getElementById('cPipefyColab'),{
+    type:'bar',
+    data:{labels:cL, datasets:[{data:cL.map(l=>colabMap[l]), backgroundColor:cBgColors, borderColor:colors.slice(0,cL.length), borderWidth:pipefyChartFilter.colab?cL.map(l=>l===pipefyChartFilter.colab?3:1):2, borderRadius:5}]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas${pipefyChartFilter.colab===cL[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+      onClick(evt,els){
+        if(!els.length) return;
+        applyPipefyFilter('colab', cL[els[0].index]);
+      },
+      scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+    },
+    plugins:[numPlugin]
   });
 
   // Tabela — usa cache dedicado para não conflitar com outras páginas

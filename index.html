@@ -500,7 +500,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row full">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Entregas Mês a Mês</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Entregas Mês a Mês</div><span class="chart-badge" id="tot-ent"></span></div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="chart-clear-btn" id="clr-month" onclick="clearChartType('month')" title="Limpar filtro de mês" style="display:none">✕ Limpar</button>
           <span style="font-size:11px;color:var(--text3);margin-right:4px">Ano:</span>
@@ -517,7 +517,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">Demandas por Origem</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
         <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
@@ -561,7 +561,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#2563EB;display:inline-block;flex-shrink:0"></span>No prazo previsto</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;display:inline-block;flex-shrink:0"></span>Fora do prazo previsto</span>
         </div>
-        <span class="tcard-count" id="rc-prev"></span>
       </div>
     </div>
     <div class="tw" style="max-height:320px;overflow-y:auto"><table>
@@ -1401,6 +1400,7 @@ function updateP1(data){
 
   // ===== GRÁFICO: ORIGEM =====
   const origData=(!yearFilter||yearFilter==='all')?allData:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter);
+  const elTotOrig=document.getElementById('tot-orig');if(elTotOrig)elTotOrig.textContent='Total: '+origData.length;
   const origMap={};origData.forEach(r=>{const o=r['Origem']||'Não informada';origMap[o]=(origMap[o]||0)+1;});
   const origL=Object.keys(origMap).sort((a,b)=>origMap[b]-origMap[a]).slice(0,12);
   const origBg=origL.map((l,i)=>{
@@ -1487,12 +1487,13 @@ function updateP1(data){
   });
 
   const entM=buildEntMes(data,yearFilter);
+  const totEnt=entM.reduce((a,b)=>a+b,0);
+  const elTotEnt=document.getElementById('tot-ent');if(elTotEnt)elTotEnt.textContent=totEnt?`Total: ${totEnt}`:'';
   rebuildEntregas(entM,colors[yearFilter==='2025'?1:0]);
 
   const dk='Demanda / Tarefa / Projeto';
   const mesLabel = chartFilter.month!==null&&chartFilter.month!==undefined ? ` — ${MESES_F[chartFilter.month]}` : '';
   const anoLabel = yearFilter&&yearFilter!=='all' ? ` — ${yearFilter}` : '';
-  document.getElementById('rc-prev').textContent=`${data.length} itens${anoLabel}${mesLabel}`;
   _cachePrev=[];
   document.getElementById('tb-prev').innerHTML=data.length?data.map(r=>{
     const _ip=_cachePrev.push(r)-1;

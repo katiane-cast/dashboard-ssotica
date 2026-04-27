@@ -1963,30 +1963,23 @@ function updatePipefyPage(cards){
     const idx = _cachePipefy.push(c)-1;
     const cls = pipefyClass[c.id]||'';
     const clsBadgeMap = {'Viável':'b-viavel','Inviável':'b-inviavel','Painel Estratégico':'b-teste','Devolvida':'b-duplicada'};
-    const optBtns = (id) => `
-      <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-        <button onclick="setPipefyClass('${id}','Viável')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">Viável</button>
-        <button onclick="setPipefyClass('${id}','Inviável')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-rose-bg);color:var(--c-rose);border-color:var(--c-rose-bd)">Inviável</button>
-        <button onclick="setPipefyClass('${id}','Painel Estratégico')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-teal-bg);color:var(--c-teal);border-color:var(--c-teal-bd)">Painel</button>
-        <button onclick="setPipefyClass('${id}','Devolvida')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-violet-bg);color:var(--c-violet);border-color:var(--c-violet-bd)">Devolvida</button>
-      </div>`;
-    const clsCell = cls
-      ? `<td onclick="event.stopPropagation()" style="min-width:160px">
-          <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
-            <span class="badge ${clsBadgeMap[cls]||'b-other'}">${cls}</span>
-            <button onclick="setPipefyClass('${c.id}','')" title="Remover classificação"
-              style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:0 2px;line-height:1" onmouseover="this.style.color='var(--c-rose)'" onmouseout="this.style.color='var(--text3)'">✕</button>
-          </div>
-          ${optBtns(c.id)}
-        </td>`
-      : `<td onclick="event.stopPropagation()" style="min-width:160px">
-          <div style="display:flex;gap:3px;flex-wrap:wrap">
-            <button onclick="setPipefyClass('${c.id}','Viável')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">Viável</button>
-            <button onclick="setPipefyClass('${c.id}','Inviável')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-rose-bg);color:var(--c-rose);border-color:var(--c-rose-bd)">Inviável</button>
-            <button onclick="setPipefyClass('${c.id}','Painel Estratégico')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-teal-bg);color:var(--c-teal);border-color:var(--c-teal-bd)">Painel</button>
-            <button onclick="setPipefyClass('${c.id}','Devolvida')" class="btn" style="padding:2px 7px;font-size:10px;background:var(--c-violet-bg);color:var(--c-violet);border-color:var(--c-violet-bd)">Devolvida</button>
-          </div>
-        </td>`;
+    const clsCell = `<td onclick="event.stopPropagation()" style="min-width:150px">
+        ${cls ? `<span class="badge ${clsBadgeMap[cls]||'b-other'}" style="display:block;margin-bottom:4px">${cls}</span>` : ''}
+        <div style="display:flex;align-items:center;gap:4px">
+          <select onchange="setPipefyClass('${c.id}',this.value);this.value=''"
+            style="font-size:11px;height:26px;padding:0 4px;flex:1;border-radius:6px"
+            title="Classificar sugestão">
+            <option value="">${cls ? '↺ Trocar...' : 'Classificar...'}</option>
+            <option value="Viável">Viável</option>
+            <option value="Inviável">Inviável</option>
+            <option value="Painel Estratégico">Painel Estratégico</option>
+            <option value="Devolvida">Devolvida</option>
+          </select>
+          ${cls ? `<button onclick="setPipefyClass('${c.id}','')" title="Remover classificação"
+            style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:0;line-height:1;flex-shrink:0"
+            onmouseover="this.style.color='var(--c-rose)'" onmouseout="this.style.color='var(--text3)'">✕</button>` : ''}
+        </div>
+      </td>`;
     return `<tr onclick="_openPipefyFromCache(${idx})" style="cursor:pointer">
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">#${c.id}</td>
       <td style="font-size:12px;font-weight:500">${c.title||'—'}</td>

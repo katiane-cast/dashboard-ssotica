@@ -837,7 +837,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Beneficia outros?</th>
         <th>Colaborador</th>
         <th onclick="srtPipefy('created_at')">Data <span class="si">↕</span></th>
-        ${isAdmin() ? '<th style="min-width:160px">Classificação</th>' : ''}
+        <th id="th-classificacao" style="min-width:160px;display:none">Classificação</th>
       </tr></thead>
       <tbody id="tb-pipefy"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Conectando ao Pipefy...</td></tr></tbody>
     </table></div>

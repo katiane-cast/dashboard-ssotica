@@ -398,7 +398,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   </nav>
   <div class="nav-footer">
     <div id="admin-login-area" class="admin-login" style="display:none">
-      <input type="email" id="admin-email-input" placeholder="Seu e-mail..." style="margin-bottom:6px"
+      <input type="email" id="admin-email-input" placeholder="E-mail..." style="margin-bottom:6px"
+        onkeydown="if(event.key==='Enter')document.getElementById('admin-pwd-input').focus()">
+      <input type="password" id="admin-pwd-input" placeholder="Senha..." style="margin-bottom:6px"
         onkeydown="if(event.key==='Enter')doAdminLogin()">
       <button class="btn" onclick="doAdminLogin()" style="width:100%;font-size:11px;padding:4px 0">Entrar</button>
     </div>
@@ -1728,6 +1730,7 @@ function getSprintFiltered(idx){
 
 // ===== ADMIN ACCESS CONTROL =====
 const ADMIN_EMAIL = 'katiane@ipe.digital';
+const ADMIN_PASS = 'Katiane@2025';
 function isAdmin(){ try{return localStorage.getItem('admin_email')===ADMIN_EMAIL;}catch(e){return false;} }
 
 function applyAdminVisibility(){
@@ -1764,17 +1767,23 @@ function toggleAdminLogin(){
 }
 
 function doAdminLogin(){
-  const input = document.getElementById('admin-email-input');
-  if(!input) return;
-  const val = input.value.trim().toLowerCase();
-  if(val === ADMIN_EMAIL){
+  const emailInput = document.getElementById('admin-email-input');
+  const pwdInput   = document.getElementById('admin-pwd-input');
+  if(!emailInput||!pwdInput) return;
+  const email = emailInput.value.trim().toLowerCase();
+  const pwd   = pwdInput.value;
+  const ADMIN_PWD = 'Melissa1@';
+  if(email === ADMIN_EMAIL && pwd === ADMIN_PWD){
     try{localStorage.setItem('admin_email', ADMIN_EMAIL);}catch(e){}
-    input.value='';
+    emailInput.value=''; pwdInput.value='';
     applyAdminVisibility();
   } else {
-    input.style.borderColor='var(--c-rose)';
-    input.placeholder='E-mail não autorizado';
-    setTimeout(()=>{ input.style.borderColor=''; input.placeholder='Seu e-mail...'; }, 2000);
+    [emailInput,pwdInput].forEach(el=>{ el.style.borderColor='var(--c-rose)'; });
+    pwdInput.placeholder='Credenciais inválidas';
+    setTimeout(()=>{
+      [emailInput,pwdInput].forEach(el=>{ el.style.borderColor=''; });
+      pwdInput.placeholder='Senha...';
+    }, 2000);
   }
 }
 

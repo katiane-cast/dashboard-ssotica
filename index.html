@@ -521,30 +521,30 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+      <div style="position:relative;height:250px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
     </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Não Planejadas por Mês e Setor</div><span class="chart-badge" id="tot-naoplan"></span></div>
-        <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
-      </div>
-      <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cNaoPlan" role="img" aria-label="Não planejadas por mês e setor"></canvas></div>
-    </div>
-  </div>
-
-<div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
         <div class="chart-title">Demandas por Sprint</div>
         <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por sprint · clique numa fatia para filtrar</div>
-      <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
+      <div style="position:relative;height:190px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
       <div class="hint-box">
         <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
         <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
       </div>
+    </div>
+  </div>
+
+  <div class="charts-row full">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Não Planejadas por Mês e Setor</div><span class="chart-badge" id="tot-naoplan"></span></div>
+        <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
+      <div style="position:relative;height:220px"><canvas id="cNaoPlan" role="img" aria-label="Não planejadas por mês e setor"></canvas></div>
     </div>
   </div>
 

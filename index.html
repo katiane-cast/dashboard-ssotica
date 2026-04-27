@@ -1978,7 +1978,8 @@ function updatePipefyPage(cards){
   const maxVal = Math.max(...cL.map(l=>colabMap[l]||0), 1);
   const chartEl = document.getElementById('tipo-cliente-chart');
   if(chartEl){
-    chartEl.innerHTML = cL.map(key=>{
+    chartEl.innerHTML='';
+    cL.forEach(key=>{
       const meta = tipoMeta[key]||{icon:'',label:key,bar:'#888',barBg:'#eee',text:'#333'};
       const val = colabMap[key]||0;
       const pct = Math.round(val/maxVal*100);
@@ -1986,9 +1987,11 @@ function updatePipefyPage(cards){
       const isFiltered = pipefyChartFilter.colab && !isActive;
       const opacity = isFiltered?'0.3':'1';
       const outline = isActive?`2px solid ${meta.bar}`:'none';
-      return `<div onclick="applyPipefyFilter('colab','${key}')" title="${key}: ${val} demandas${isActive?' — clique para limpar':' — clique para filtrar'}"
-        style="display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:${isActive?meta.barBg:'transparent'};outline:${outline};transition:all .2s;opacity:${opacity}">
-        <div style="flex-shrink:0;filter:${isFiltered?'grayscale(1)':'none'}">${meta.icon}</div>
+      const div=document.createElement('div');
+      div.style.cssText=`display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:${isActive?meta.barBg:'transparent'};outline:${outline};transition:all .2s;opacity:${opacity}`;
+      div.title=`${key}: ${val} demandas`;
+      div.addEventListener('click',()=>applyPipefyFilter('colab',key));
+      div.innerHTML=`<div style="flex-shrink:0;filter:${isFiltered?'grayscale(1)':'none'}">${meta.icon}</div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
             <span style="font-size:13px;font-weight:600;color:${meta.text}">${meta.label}</span>
@@ -1997,9 +2000,10 @@ function updatePipefyPage(cards){
           <div style="height:8px;border-radius:4px;background:var(--surface3);overflow:hidden">
             <div style="height:100%;border-radius:4px;background:${meta.bar};width:${pct}%;transition:width .5s ease"></div>
           </div>
-        </div>
-      </div>`;
-    }).join('');
+        </div>`;
+      return div;
+      chartEl.appendChild(div);
+    });
   }
 
   // Tabela — usa cache dedicado para não conflitar com outras páginas

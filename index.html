@@ -483,7 +483,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Esforço</th>
         <th>Criticidade</th>
         <th>Ordem Desenvolv.</th>
-        <th id="th-prio-score" style="display:none;min-width:110px">Pontuação</th>
+        <th>Status</th>
       </tr></thead>
       <tbody id="tb-prio"><tr class="loading-row"><td colspan="12"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -1805,9 +1805,7 @@ function applyAdminVisibility(){
   // Mostrar/esconder coluna Classificação no thead (Pipefy)
   const thCls = document.getElementById('th-classificacao');
   if(thCls) thCls.style.display = ok ? '' : 'none';
-  // Mostrar/esconder coluna Pontuação (Priorização)
-  const thScore = document.getElementById('th-prio-score');
-  if(thScore) thScore.style.display = ok ? '' : 'none';
+
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
 }
@@ -2294,8 +2292,7 @@ let prioScores = {};
 try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e){}
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
 function setPrioScore(id, val){
-  if(val==='del'){delete prioScores[id];}else if(val!==''&&val!==null&&val!==undefined) prioScores[id]=parseInt(val);
-  else delete prioScores[id];
+  if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
   savePrioScores();
   updatePrio(getPrioFiltered());
 }
@@ -2331,10 +2328,6 @@ function updatePrio(data){
   const rcEl=document.getElementById('rc-prio');
   if(rcEl)rcEl.textContent=`${data.length} itens`;
 
-  // Mostrar/esconder coluna de pontuação
-  const thScore=document.getElementById('th-prio-score');
-  if(thScore)thScore.style.display=isAdmin()?'':'none';
-
   const dk='Demanda / Tarefa / Projeto';
   _cachePrio=[];
   const tbody=document.getElementById('tb-prio');
@@ -2345,16 +2338,7 @@ function updatePrio(data){
     const id=r['Jira']||r['ID Contrato']||r[dk];
     const score=prioScores[id];
     const idx=_cachePrio.push(r)-1;
-    const scoreCell=isAdmin()?`<td onclick="event.stopPropagation()" style="white-space:nowrap">
-      ${score!==undefined?`<span class="badge b-feito" style="margin-right:4px">${score}</span>`:''}
-      <select onchange="setPrioScore('${id}',this.value);this.value=''"
-        style="font-size:11px;height:26px;padding:0 4px;border-radius:6px;${score!==undefined?'':'width:90px'}"
-        title="Pontuar demanda">
-        <option value="">${score!==undefined?'↺ Trocar':'Pontuar...'}</option>
-        ${Array.from({length:16},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
-        ${score!==undefined?'<option value="del">✕ Remover</option>':''}
-      </select>
-    </td>`:'';
+
     return `<tr onclick="_openPrioFromCache(${idx})" style="cursor:pointer${score!==undefined?';background:var(--c-blue-bg)':''}" title="${score!==undefined?'Pontuação: '+score:'Sem pontuação'}">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['Ano Base']||'—'}</td>
@@ -2366,8 +2350,20 @@ function updatePrio(data){
       <td style="font-size:11px">${r['Solicitante']||'—'}</td>
       <td style="font-size:11px">${r['Esforço']||'—'}</td>
       <td>${r['Criticidade']?cBadge(r['Criticidade']):'—'}</td>
-      <td style="font-size:11px;max-width:160px"><span class="trunc" style="max-width:160px">${r['Ordem de Desenvolv.']||'—'}</span></td>
-      ${scoreCell}
+      <td>${sBadge(r['Status'])}</td>
+      <td onclick="event.stopPropagation()" style="min-width:130px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="trunc" style="max-width:150px;font-size:11px">${r['Ordem de Desenvolv.']||'—'}</span>
+          ${isAdmin()?`<div style="display:flex;align-items:center;gap:4px">
+            <select onchange="setPrioScore('${id}',this.value)"
+              style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;flex:1"
+              title="Pontuar demanda">
+              <option value="">—</option>
+              ${Array.from({length:16},(_,i)=>`<option value="${i}" ${score===i?'selected':''} >${i}</option>`).join('')}
+            </select>
+          </div>`:''}
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }

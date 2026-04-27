@@ -1544,7 +1544,12 @@ function updateP1(data){
       if(!entrega||entrega==='—') return 'color:var(--text3)';
       if(!previsao||previsao==='—') return 'color:var(--text2)';
       const toDate=s=>{const p=s.split('/');return p.length===3?new Date(p[2],p[1]-1,p[0]):new Date(s);};
-      try{const de=toDate(entrega),dp=toDate(previsao);return de>dp?'color:#DC2626;font-weight:600':'color:#16A34A;font-weight:600';}catch(e){return 'color:var(--text2)';}
+      try{
+        const de=toDate(entrega),dp=toDate(previsao);
+        if(de.getTime()===dp.getTime()) return 'color:#2563EB;font-weight:600'; // igual — azul
+        if(de<dp) return 'color:#16A34A;font-weight:600';                       // antes — verde
+        return 'color:#DC2626;font-weight:600';                                 // depois — vermelho
+      }catch(e){return 'color:var(--text2)';}
     }
     const entDev=r['Entrega Desenvolvimento']||'—';
     const entProd=r['Entrega em Produção']||'—';

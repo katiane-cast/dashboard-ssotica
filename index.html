@@ -349,6 +349,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   border: 1px solid var(--c-teal-bd); background: var(--c-teal-bg); color: var(--c-teal);
 }
 .chart-clear-btn:hover { filter: brightness(.92); }
+.prio-score-label { display: none; }
 .err-banner { background: var(--c-rose-bg); border: 1px solid var(--c-rose-bd); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--c-rose); display: none; }
 .admin-login { padding: 10px 10px 4px; }
 .admin-login input[type="email"] { font-size:11px; height:28px; padding:0 8px; border-radius:6px; width:100%; }
@@ -482,8 +483,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Solicitante</th>
         <th>Esforço</th>
         <th>Criticidade</th>
-        <th>Ordem Desenvolv.</th>
         <th>Status</th>
+        <th>Ordem Desenvolv.</th>
       </tr></thead>
       <tbody id="tb-prio"><tr class="loading-row"><td colspan="12"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -1125,6 +1126,17 @@ function parseCSV(t){
   return rows.slice(1).filter(r=>r.some(x=>x.trim())).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||'').trim());return o;});
 }
 
+function sBadgePrio(s){
+  if(!s)return'<span class="badge b-other">—</span>';
+  const u=s.toUpperCase();
+  if(u.includes('FAZER'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
+  if(u.includes('DESENVOLVIMENTO'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
+  if(u.includes('TESTE'))return`<span class="badge b-teste"><span class="bd"></span>${s}</span>`;
+  if(u.includes('BACKLOG'))return`<span class="badge b-fazer"><span class="bd"></span>${s}</span>`;
+  if(u.includes('SUSPENSA'))return`<span class="badge b-suspensa"><span class="bd"></span>${s}</span>`;
+  if(u.includes('PRODU')||u.includes('FEITO')||u.includes('DONE'))return`<span class="badge b-feito"><span class="bd"></span>${s}</span>`;
+  return`<span class="badge b-other"><span class="bd"></span>${s}</span>`;
+}
 function sBadge(s){
   if(!s)return'<span class="badge b-other">—</span>';
   const u=s.toUpperCase();
@@ -2350,17 +2362,15 @@ function updatePrio(data){
       <td style="font-size:11px">${r['Solicitante']||'—'}</td>
       <td style="font-size:11px">${r['Esforço']||'—'}</td>
       <td>${r['Criticidade']?cBadge(r['Criticidade']):'—'}</td>
-      <td>${sBadge(r['Status'])}</td>
+      <td>${sBadgePrio(r['Status'])}</td>
       <td onclick="event.stopPropagation()" style="min-width:130px">
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <span class="trunc" style="max-width:150px;font-size:11px">${r['Ordem de Desenvolv.']||'—'}</span>
-          ${isAdmin()?`<select onchange="setPrioScore('${id}',this.value)"
-              style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;width:100%"
-              title="Pontuar demanda">
-              <option value="" ${score===undefined?'selected':''}>—</option>
-              ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-            </select>`:''}
-        </div>
+        <span class="trunc" style="max-width:150px;font-size:11px;display:block">${r['Ordem de Desenvolv.']||'—'}</span>
+        ${isAdmin()?`<select onchange="setPrioScore('${id}',this.value)"
+            style="font-size:10px;height:22px;padding:0 3px;border-radius:5px;width:100%;margin-top:3px"
+            title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
+            <option value="" ${score===undefined?'selected':''}>—</option>
+            ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
+          </select>`:''}
       </td>
     </tr>`;
   }).join('');

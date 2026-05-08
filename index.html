@@ -1465,6 +1465,15 @@ function openPipefyModal(c){
   const isMovido    = !!pipefyMovido[cardId];
   const podeM       = !!(jiraAtual && tituloAtual);
 
+  const jiraLink    = jiraAtual ? '<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: <a href="https://ipedigital.atlassian.net/browse/'+jiraAtual+'" target="_blank" style="color:var(--c-blue)">'+jiraAtual+'</a></div>' : '';
+  const tituloSaved = tituloAtual ? '<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: '+tituloAtual+'</div>' : '';
+  const btnMoverHtml = isMovido
+    ? '<div style="font-size:12px;color:var(--c-emerald);font-weight:600">✅ Card movido para Backlog com etiqueta Aguardando card Jira</div>'
+    : (podeM
+        ? '<button onclick="moverCardParaBacklog('+cardId+')" class="btn" style="width:100%;justify-content:center;font-size:13px;padding:9px;background:var(--c-emerald);color:#fff;border-color:var(--c-emerald);">🚀 Mover para Backlog + Etiquetar no Pipefy</button>'
+        : '<button disabled class="btn" style="width:100%;justify-content:center;font-size:13px;padding:9px;opacity:.45;cursor:not-allowed;">🚀 Mover para Backlog + Etiquetar no Pipefy</button><div style="margin-top:6px;font-size:11px;color:var(--text3);text-align:center">Preencha e salve o Jira e o Título para habilitar</div>'
+      );
+
   const viavelSection = isViavel && isAdmin() ? `
     <div class="ms" style="margin-top:12px;border:1px solid var(--c-emerald-bd);border-radius:10px;padding:12px 14px;background:var(--c-emerald-bg)">
       <div class="ms-t" style="color:var(--c-emerald);margin-bottom:10px">📋 Dados para criação no Jira</div>
@@ -1476,7 +1485,7 @@ function openPipefyModal(c){
               style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;height:34px;padding:0 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
             <button onclick="_savePipefyJira('${cardId}')" class="btn" style="background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd);font-size:12px;white-space:nowrap">💾 Salvar</button>
           </div>
-          ${jiraAtual ? `<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: <a href="https://ipedigital.atlassian.net/browse/${jiraAtual}" target="_blank" style="color:var(--c-blue)">${jiraAtual}</a></div>` : ''}
+          ${jiraLink}
         </div>
         <div>
           <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Título</div>
@@ -1485,27 +1494,13 @@ function openPipefyModal(c){
               style="flex:1;font-size:12px;height:34px;padding:0 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
             <button onclick="_savePipefyTitulo('${cardId}')" class="btn" style="background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd);font-size:12px;white-space:nowrap">💾 Salvar</button>
           </div>
-          ${tituloAtual ? `<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: ${tituloAtual}</div>` : ''}
+          ${tituloSaved}
         </div>
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--c-emerald-bd)">
-        ${isMovido
-          ? `<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c-emerald);font-weight:600">
-               ✅ Card movido para Backlog com etiqueta "Aguardando card Jira"
-               <button onclick="delete pipefyMovido['${cardId}'];savePipefyMovido();const c=_cachePipefy.find(c=>String(c.id)==='${cardId}');if(c)openPipefyModal(c);"
-                 style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);text-decoration:underline">desfazer</button>
-             </div>`
-          : `<button id="btn-mover-${cardId}" onclick="moverCardParaBacklog('${cardId}')"
-               ${podeM ? '' : 'disabled'}
-               class="btn" style="width:100%;justify-content:center;font-size:13px;padding:9px;
-               ${podeM ? 'background:var(--c-emerald);color:#fff;border-color:var(--c-emerald);cursor:pointer;' : 'opacity:.45;cursor:not-allowed;'}">
-               🚀 Mover para Backlog + Etiquetar no Pipefy
-             </button>
-             ${!podeM ? '<div style="margin-top:6px;font-size:11px;color:var(--text3);text-align:center">Preencha e salve o Jira e o Título para habilitar</div>' : ''}`
-        }
+        ${btnMoverHtml}
       </div>
-    </div>` : '';
-
+    </div>` : ''
   const devSection = isInviavel && isAdmin() ? `
     <div class="ms" style="margin-top:12px;border:1px solid var(--c-rose-bd);border-radius:10px;padding:12px 14px;background:var(--c-rose-bg)">
       <div class="ms-t" style="color:var(--c-rose);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -1546,7 +1541,6 @@ function openPipefyModal(c){
     <div class="ms"><div class="ms-t">Sugestão de Melhoria</div><div class="ms-c">${fv('Registre')}</div></div>
     <div class="ms"><div class="ms-t">Solução Paliativa</div><div class="ms-c">${fv('paliativa')}</div></div>
     <div class="ms"><div class="ms-t">Classificação Produto</div><div class="ms-c">${fv('Classificação')}</div></div>
-    ${viavelSection}
     ${viavelSection}
     ${devSection}
     <div class="ms" style="margin-top:8px">
@@ -1968,74 +1962,6 @@ function setPipefyDevolutiva(id,val){
   savePipefyDevolutiva();
 }
 
-// ── Storage Jira / Título / Movido para cards Viáveis ──
-let pipefyJira={};
-try{const sj=localStorage.getItem('pipefy_jira');if(sj)pipefyJira=JSON.parse(sj);}catch(e){}
-function savePipefyJira(){try{localStorage.setItem('pipefy_jira',JSON.stringify(pipefyJira));}catch(e){}}
-function _savePipefyJira(id){
-  const inp=document.getElementById('jira-inp-'+id);if(!inp)return;
-  const val=inp.value.trim();
-  if(val)pipefyJira[id]=val;else delete pipefyJira[id];
-  savePipefyJira();
-  const c=_cachePipefy.find(c=>String(c.id)===String(id));if(c)openPipefyModal(c);
-}
-
-let pipefyTitulo={};
-try{const st=localStorage.getItem('pipefy_titulo');if(st)pipefyTitulo=JSON.parse(st);}catch(e){}
-function savePipefyTitulo(){try{localStorage.setItem('pipefy_titulo',JSON.stringify(pipefyTitulo));}catch(e){}}
-function _savePipefyTitulo(id){
-  const inp=document.getElementById('titulo-inp-'+id);if(!inp)return;
-  const val=inp.value.trim();
-  if(val)pipefyTitulo[id]=val;else delete pipefyTitulo[id];
-  savePipefyTitulo();
-  const c=_cachePipefy.find(c=>String(c.id)===String(id));if(c)openPipefyModal(c);
-}
-
-let pipefyMovido={};
-try{const sm=localStorage.getItem('pipefy_movido');if(sm)pipefyMovido=JSON.parse(sm);}catch(e){}
-function savePipefyMovido(){try{localStorage.setItem('pipefy_movido',JSON.stringify(pipefyMovido));}catch(e){}}
-
-// ── Chamada GraphQL ao Pipefy ──
-async function pipefyMutation(query){
-  const proxyUrl=PIPEFY_PROXY_URL||('https://corsproxy.io/?url='+encodeURIComponent('https://api.pipefy.com/graphql'));
-  const r=await fetch(proxyUrl,{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+PIPEFY_DIRECT_TOKEN,'Content-Type':'application/json','x-requested-with':'XMLHttpRequest'},
-    body:JSON.stringify({query})
-  });
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  return await r.json();
-}
-
-// ── Mover card para Backlog, gravar Jira/Título e etiquetar ──
-async function moverCardParaBacklog(cardId){
-  const BACKLOG_PHASE='336178214';
-  const LABEL_ID='317514267';
-  const jiraVal=(pipefyJira[cardId]||'').trim();
-  const tituloVal=(pipefyTitulo[cardId]||'').trim();
-  if(!jiraVal||!tituloVal){alert('Preencha e salve o Jira e o Título antes de mover.');return;}
-  const btn=document.getElementById('btn-mover-'+cardId);
-  if(btn){btn.disabled=true;btn.textContent='⏳ Movendo...';}
-  try{
-    const mv=await pipefyMutation(`mutation{moveCardToPhase(input:{card_id:${cardId},destination_phase_id:${BACKLOG_PHASE}}){card{id}}}`);
-    if(mv.errors)throw new Error(mv.errors[0].message);
-    const je=jiraVal.replace(/\/g,'\\').replace(/"/g,'\"');
-    const te=tituloVal.replace(/\/g,'\\').replace(/"/g,'\"');
-    const u1=await pipefyMutation(`mutation{updateCardField(input:{card_id:${cardId},field_id:"taiga_3",value:"${je}"}){card{id}}}`);
-    if(u1.errors)throw new Error(u1.errors[0].message);
-    const u2=await pipefyMutation(`mutation{updateCardField(input:{card_id:${cardId},field_id:"t_tulo",value:"${te}"}){card{id}}}`);
-    if(u2.errors)throw new Error(u2.errors[0].message);
-    const lb=await pipefyMutation(`mutation{updateCard(input:{id:${cardId},label_ids:[${LABEL_ID}]}){card{id}}}`);
-    if(lb.errors)throw new Error(lb.errors[0].message);
-    pipefyMovido[cardId]=true;savePipefyMovido();
-    const c=_cachePipefy.find(c=>String(c.id)===String(cardId));
-    if(c)openPipefyModal(c);
-  }catch(e){
-    if(btn){btn.disabled=false;btn.textContent='🚀 Mover para Backlog + Etiquetar no Pipefy';}
-    alert('Erro ao mover card: '+e.message);
-  }
-}
-
 // ── Storage Jira / Título / Movido ──
 let pipefyJira = {};
 try{const sj=localStorage.getItem('pipefy_jira');if(sj)pipefyJira=JSON.parse(sj);}catch(e){}
@@ -2099,8 +2025,7 @@ async function moverCardParaBacklog(cardId){
     if(mv.errors) throw new Error(mv.errors[0].message);
 
     // 2. Preencher campos Jira e Título no card do Pipefy
-    const jiraEscaped   = jiraVal.replace(/\/g,'\\').replace(/"/g,'\"');
-    const tituloEscaped = tituloVal.replace(/\/g,'\\').replace(/"/g,'\"');
+
     const upd = await pipefyMutation(
       `mutation { updateCardField(input: { card_id: ${cardId}, field_id: "taiga_3",  value: "${jiraEscaped}" })   { card { id } } }`
     );

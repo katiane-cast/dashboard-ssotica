@@ -547,7 +547,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-icon">⏳</div>
       <div class="kpi-label">Em Fila</div>
       <div class="kpi-value" id="kv-fila">—</div>
-      <div class="kpi-sub">próximas a fazer</div>
+      <div class="kpi-sub">a fazer + suspensas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
     </div>
     <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
@@ -566,7 +566,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
-      <div class="kpi-label">Em Desenvolvimento</div>
+      <div class="kpi-label">Em Desenvolv.</div>
       <div class="kpi-value" id="kv-dev">—</div>
       <div class="kpi-sub">em andamento</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-dev"></div></div>
@@ -619,11 +619,15 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
-        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
-        <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
+        <div class="chart-title">Demandas na Esteira</div>
+        <button class="chart-clear-btn" id="clr-esteira" onclick="clearChartType('status')" title="Limpar filtro de status" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+      <div class="chart-sub">Distribuição por status · clique numa fatia para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cEsteira" role="img" aria-label="Demandas por status"></canvas></div>
+      <div class="hint-box">
+        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
+        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
+      </div>
     </div>
     <div class="chart-card">
       <div class="chart-header">
@@ -635,18 +639,22 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-<div class="charts-row">
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
+        <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+    </div>
     <div class="chart-card">
       <div class="chart-header">
         <div class="chart-title">Demandas por Sprint</div>
         <button class="chart-clear-btn" id="clr-sprint" onclick="clearChartType('sprint')" title="Limpar filtro de sprint" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por sprint · clique numa fatia para filtrar</div>
-      <div style="position:relative;height:165px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
-      <div class="hint-box">
-        <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
-        <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
-      </div>
+      <div style="position:relative;height:215px"><canvas id="cSprint" role="img" aria-label="Demandas por sprint"></canvas></div>
     </div>
   </div>
 
@@ -669,13 +677,14 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <thead><tr>
         <th onclick="srt('prev','Jira')">Jira <span class="si">↕</span></th>
         <th>ID Contrato</th>
+        <th onclick="srt('prev','Solicitante')">Solicitante <span class="si">↕</span></th>
         <th onclick="srt('prev','dem')">Demanda <span class="si">↕</span></th>
         <th onclick="srt('prev','Status')">Status <span class="si">↕</span></th>
         <th>Start Date</th>
         <th>Prev. Dev</th>
         <th>Entrega Dev</th>
         <th>Prev. Prod</th>
-        <th>Entrega Requisito</th>
+        <th>Entrega em Produção</th>
       </tr></thead>
       <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -1626,7 +1635,32 @@ function updateP1(data){
   }
 
 
-  const spMap={};data.forEach(r=>{const s=r['Sprint']||'À Definir';spMap[s]=(spMap[s]||0)+1;});
+  // ===== GRÁFICO: DEMANDAS NA ESTEIRA (doughnut) =====
+  const sMap={};data.forEach(r=>{const s=r['Status']||'Sem status';sMap[s]=(sMap[s]||0)+1;});
+  const sL=Object.keys(sMap).sort((a,b)=>sMap[b]-sMap[a]);
+  if(ch.est)ch.est.destroy();
+  const esBgColors=sL.map((l,i)=>{
+    if(chartFilter.status&&chartFilter.status===l) return colors[i%colors.length]+'FF';
+    if(chartFilter.status&&chartFilter.status!==l) return colors[i%colors.length]+'44';
+    return colors[i%colors.length]+'BB';
+  });
+  const esOffset=sL.map(l=>chartFilter.status===l?10:0);
+  ch.est=new Chart(document.getElementById('cEsteira'),{
+    type:'doughnut',
+    data:{labels:sL,datasets:[{data:sL.map(l=>sMap[l]),backgroundColor:esBgColors,borderColor:colors.slice(0,sL.length),borderWidth:2,offset:esOffset}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{
+        legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:8,color:gt()}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}${chartFilter.status===ctx.label?' ✓ filtro ativo':' (clique para filtrar)'}`}}
+      },
+      onClick(evt,els){
+        if(!els.length)return;
+        const label=sL[els[0].index];
+        applyChartFilter('status',label);
+      }
+    }
+  });
   const spL=Object.keys(spMap);
   if(ch.sp)ch.sp.destroy();
   const spBgColors=spL.map((l,i)=>{
@@ -1682,6 +1716,7 @@ function updateP1(data){
     return `<tr onclick="_openPrevFromCache(${_ip})" style="cursor:pointer">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
+      <td style="font-size:11px">${r['Solicitante']||'—'}</td>
       <td><span class="trunc">${r[dk]||'—'}</span></td>
       <td>${sBadge(r['Status'])}</td>
       <td style="font-size:11px;white-space:nowrap;color:var(--text3)">${r['Start Date']||'—'}</td>

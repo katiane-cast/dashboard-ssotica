@@ -2026,14 +2026,7 @@ async function moverCardParaBacklog(cardId){
 
     // 2. Preencher campos Jira e Título no card do Pipefy
 
-    const upd = await pipefyMutation(
-      `mutation { updateCardField(input: { card_id: ${cardId}, field_id: "taiga_3",  value: "${jiraEscaped}" })   { card { id } } }`
-    );
-    if(upd.errors) throw new Error(upd.errors[0].message);
-    const upd2 = await pipefyMutation(
-      `mutation { updateCardField(input: { card_id: ${cardId}, field_id: "t_tulo", value: "${tituloEscaped}" }) { card { id } } }`
-    );
-    if(upd2.errors) throw new Error(upd2.errors[0].message);
+    const upd
 
     // 3. Adicionar etiqueta "Aguardando card Jira"
     const lb = await pipefyMutation(

@@ -616,18 +616,26 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <div class="charts-row full">
+  <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Demandas por Origem</div><span class="chart-badge" id="tot-orig"></span></div>
         <button class="chart-clear-btn" id="clr-origem" onclick="clearChartType('origem')" title="Limpar filtro de origem" style="display:none">✕ Limpar</button>
       </div>
       <div class="chart-sub">Distribuição por origem das demandas · clique para filtrar</div>
-      <div style="position:relative;height:260px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+      <div style="position:relative;height:215px"><canvas id="cOrigem" role="img" aria-label="Demandas por origem"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Não Planejadas por Mês e Setor</div>
+        <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
+      <div style="position:relative;height:215px"><canvas id="cNaoPlan" role="img" aria-label="Não planejadas por mês e setor"></canvas></div>
     </div>
   </div>
 
-  <div class="charts-row">
+<div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
         <div class="chart-title">Demandas por Sprint</div>
@@ -639,14 +647,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div class="hint-item">🏃 <span><strong>Sprint</strong> — Período fixo (1-2 sem.) para entregar um pacote de melhorias</span></div>
         <div class="hint-item">🔄 <span><strong>Kanban</strong> — Fluxo contínuo: entrou → começa → entrega</span></div>
       </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">Não Planejadas por Mês e Setor</div>
-        <button class="chart-clear-btn" id="clr-nao-plan" onclick="clearChartType('naoPlan')" title="Limpar filtro" style="display:none">✕ Limpar</button>
-      </div>
-      <div class="chart-sub">Demandas com "Não Planejado" na Ordem de Desenvolv. · clique para filtrar</div>
-      <div style="position:relative;height:215px"><canvas id="cNaoPlan" role="img" aria-label="Não planejadas por mês e setor"></canvas></div>
     </div>
   </div>
 
@@ -669,14 +669,13 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <thead><tr>
         <th onclick="srt('prev','Jira')">Jira <span class="si">↕</span></th>
         <th>ID Contrato</th>
-        <th>Solicitante</th>
         <th onclick="srt('prev','dem')">Demanda <span class="si">↕</span></th>
         <th onclick="srt('prev','Status')">Status <span class="si">↕</span></th>
         <th>Start Date</th>
         <th>Prev. Dev</th>
         <th>Entrega Dev</th>
         <th>Prev. Prod</th>
-        <th>Entrega em Produção</th>
+        <th>Entrega Requisito</th>
       </tr></thead>
       <tbody id="tb-prev"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -804,7 +803,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th onclick="srt('req','Status')">Status <span class="si">↕</span></th>
         <th>Sprint</th>
         <th onclick="srt('req','Solicitante')">Solicitante <span class="si">↕</span></th>
-        <th>Entrega em Produção</th>
+        <th>Entrega Requisito</th>
       </tr></thead>
       <tbody id="tb-req"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Carregando...</td></tr></tbody>
     </table></div>
@@ -1459,6 +1458,36 @@ function openPipefyModal(c){
   const clsAtual = pipefyClass[cardId]||'';
   const devAtual = pipefyDevolutiva[cardId]||'';
   const isInviavel = clsAtual === 'Inviável';
+  const isViavel = clsAtual === 'Viável';
+
+  // Valores salvos de Jira e Título para cards Viáveis
+  const jiraAtual = pipefyJira[cardId]||'';
+  const tituloAtual = pipefyTitulo[cardId]||'';
+
+  const viavelSection = isViavel && isAdmin() ? `
+    <div class="ms" style="margin-top:12px;border:1px solid var(--c-emerald-bd);border-radius:10px;padding:12px 14px;background:var(--c-emerald-bg)">
+      <div class="ms-t" style="color:var(--c-emerald);margin-bottom:10px">📋 Dados para criação no Jira</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Jira</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input id="jira-inp-${cardId}" type="text" value="${jiraAtual}" placeholder="Ex: SSOT-1234"
+              style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;height:34px;padding:0 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
+            <button onclick="_savePipefyJira('${cardId}')" class="btn" style="background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd);font-size:12px;white-space:nowrap">💾 Salvar</button>
+          </div>
+          ${jiraAtual ? `<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: <a href="https://ipedigital.atlassian.net/browse/${jiraAtual}" target="_blank" style="color:var(--c-blue)">${jiraAtual}</a></div>` : ''}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Título</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input id="titulo-inp-${cardId}" type="text" value="${tituloAtual}" placeholder="Título da tarefa no Jira"
+              style="flex:1;font-size:12px;height:34px;padding:0 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
+            <button onclick="_savePipefyTitulo('${cardId}')" class="btn" style="background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd);font-size:12px;white-space:nowrap">💾 Salvar</button>
+          </div>
+          ${tituloAtual ? `<div style="margin-top:4px;font-size:11px;color:var(--text3)">Salvo: ${tituloAtual}</div>` : ''}
+        </div>
+      </div>
+    </div>` : '';
 
   const devSection = isInviavel && isAdmin() ? `
     <div class="ms" style="margin-top:12px;border:1px solid var(--c-rose-bd);border-radius:10px;padding:12px 14px;background:var(--c-rose-bg)">
@@ -1500,6 +1529,7 @@ function openPipefyModal(c){
     <div class="ms"><div class="ms-t">Sugestão de Melhoria</div><div class="ms-c">${fv('Registre')}</div></div>
     <div class="ms"><div class="ms-t">Solução Paliativa</div><div class="ms-c">${fv('paliativa')}</div></div>
     <div class="ms"><div class="ms-t">Classificação Produto</div><div class="ms-c">${fv('Classificação')}</div></div>
+    ${viavelSection}
     ${devSection}
     <div class="ms" style="margin-top:8px">
       <a href="https://app.pipefy.com/pipes/306026544/cards/${c.id}" target="_blank" style="color:var(--c-blue);font-size:13px">🔗 Abrir no Pipefy</a>
@@ -1683,7 +1713,6 @@ function updateP1(data){
     return `<tr onclick="_openPrevFromCache(${_ip})" style="cursor:pointer">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
-      <td style="font-size:11px;color:var(--text2)">${r['Solicitante']||'—'}</td>
       <td><span class="trunc">${r[dk]||'—'}</span></td>
       <td>${sBadge(r['Status'])}</td>
       <td style="font-size:11px;white-space:nowrap;color:var(--text3)">${r['Start Date']||'—'}</td>
@@ -1907,7 +1936,7 @@ function setPipefyClass(id,val){
   if(val)pipefyClass[id]=val;else delete pipefyClass[id];
   savePipefyClass();
   updatePipefyPage(getPipefyFiltered());
-  if(val==='Inviável'){
+  if(val==='Inviável'||val==='Viável'){
     const c=_cachePipefy.find(c=>String(c.id)===String(id));
     if(c) setTimeout(()=>openPipefyModal(c),50);
   }
@@ -1919,6 +1948,33 @@ function savePipefyDevolutiva(){try{localStorage.setItem('pipefy_devolutiva',JSO
 function setPipefyDevolutiva(id,val){
   if(val&&val.trim())pipefyDevolutiva[id]=val.trim();else delete pipefyDevolutiva[id];
   savePipefyDevolutiva();
+}
+
+// Storage Jira e Título para cards Viáveis
+let pipefyJira = {};
+try{const sj=localStorage.getItem('pipefy_jira');if(sj)pipefyJira=JSON.parse(sj);}catch(e){}
+function savePipefyJira(){try{localStorage.setItem('pipefy_jira',JSON.stringify(pipefyJira));}catch(e){}}
+function _savePipefyJira(id){
+  const inp=document.getElementById('jira-inp-'+id);
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(val)pipefyJira[id]=val;else delete pipefyJira[id];
+  savePipefyJira();
+  const c=_cachePipefy.find(c=>String(c.id)===String(id));
+  if(c) openPipefyModal(c);
+}
+
+let pipefyTitulo = {};
+try{const st=localStorage.getItem('pipefy_titulo');if(st)pipefyTitulo=JSON.parse(st);}catch(e){}
+function savePipefyTitulo(){try{localStorage.setItem('pipefy_titulo',JSON.stringify(pipefyTitulo));}catch(e){}}
+function _savePipefyTitulo(id){
+  const inp=document.getElementById('titulo-inp-'+id);
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(val)pipefyTitulo[id]=val;else delete pipefyTitulo[id];
+  savePipefyTitulo();
+  const c=_cachePipefy.find(c=>String(c.id)===String(id));
+  if(c) openPipefyModal(c);
 }
 let pipefySortState = {c:'', a:true};
 let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos

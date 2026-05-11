@@ -1138,12 +1138,12 @@ function showPage(n){
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   pageEl.classList.add('active');navEl.classList.add('active');
   try{localStorage.setItem('activePage',n);}catch(e){}
-  if(n==='pipefy'&&allPipefyCards.length===0&&document.readyState==='complete')loadPipefy();
+  if(n==='pipefy'&&allPipefyCards.length===0)loadPipefy();
 }
 (()=>{try{const s=localStorage.getItem('activePage');
   if(s&&document.getElementById('page-'+s)&&document.querySelector('[data-page="'+s+'"]'))showPage(s);
-  else showPage('pipefy');
-}catch(e){showPage('pipefy');}})();
+  else showPage('viaveis');
+}catch(e){showPage('viaveis');}})();
 
 function parseCSV(t){
   let cur='',inQ=false,f=[],rows=[];
@@ -2532,9 +2532,6 @@ async function loadData(){
     setYearFilter(yearFilter);
      updateP2(getTF());
      updateP3(getReqF());
-     // Se a página ativa for pipefy e ainda não carregou, carregar agora
-     const activePage = localStorage.getItem('activePage');
-     if(activePage==='pipefy' && allPipefyCards.length===0) loadPipefy();
   }catch(e){
     const b=document.getElementById('err1');b.style.display='block';
     b.innerHTML=`<strong>Erro ao carregar dados.</strong> Verifique se a planilha está pública. <small style="opacity:.7">${e.message}</small>`;

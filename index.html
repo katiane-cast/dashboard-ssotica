@@ -2227,8 +2227,8 @@ function updatePipefyPage(cards){
         </div>
       </td>` : '';
     return `<tr onclick="_openPipefyFromCache(${idx})" style="cursor:pointer">
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">#${c.id}</td>
-      <td style="font-size:12px;font-weight:500">${c.title||'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td>
+      <td style="font-size:12px;font-weight:500">${getFieldVal(c.fields,'nome do cliente')||c.title||'—'}</td>
       <td><span class="trunc" style="max-width:160px;font-size:11px">${func}</span></td>
       <td><span class="trunc" style="max-width:240px;font-size:11px">${sugest}</span></td>
       <td>${benBadge}</td>

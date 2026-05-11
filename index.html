@@ -918,6 +918,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Cliente</th>
         <th>Jira</th>
         <th>Título Demanda</th>
+        <th>Tipo Cliente</th>
         <th>Sugestão</th>
         <th>Beneficia outros?</th>
         <th>Colaborador</th>
@@ -2281,6 +2282,7 @@ function updatePipefyPage(cards){
       <td><span class="trunc" style="max-width:160px;font-size:11px">${func}</span></td>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--c-blue)">${pipefyJira[c.id]||'—'}</td>
       <td><span class="trunc" style="max-width:180px;font-size:11px">${pipefyTitulo[c.id]||'—'}</span></td>
+      <td>${(()=>{const t=getFieldVal(c.fields,'Tipo do cliente')||'';const tl=t.toLowerCase();if(tl.includes('diamante'))return'<span class="badge" style="background:#EBF8FF;color:#2B6CB0">💎 Diamante</span>';if(tl.includes('ouro'))return'<span class="badge" style="background:#FFFBEB;color:#92400E">🥇 Ouro</span>';if(tl.includes('prata'))return'<span class="badge" style="background:#F1F5F9;color:#374151">🥈 Prata</span>';if(tl.includes('bronze'))return'<span class="badge" style="background:#FFF7ED;color:#9A3412">🥉 Bronze</span>';return t?`<span class="badge b-other">${t}</span>`:'<span style="color:var(--text3)">—</span>';})()}</td>
       <td><span class="trunc" style="max-width:240px;font-size:11px">${sugest}</span></td>
       <td>${benBadge}</td>
       <td style="font-size:12px">${colab}</td>

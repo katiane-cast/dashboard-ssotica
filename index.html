@@ -916,6 +916,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <th>Card #</th>
         <th onclick="srtPipefy('title')">Título/Cliente <span class="si">↕</span></th>
         <th>Cliente</th>
+        <th>Jira</th>
+        <th>Título Demanda</th>
         <th>Sugestão</th>
         <th>Beneficia outros?</th>
         <th>Colaborador</th>
@@ -2277,6 +2279,8 @@ function updatePipefyPage(cards){
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td>
       <td style="font-size:12px;font-weight:500">${getFieldVal(c.fields,'nome do cliente')||'—'}</td>
       <td><span class="trunc" style="max-width:160px;font-size:11px">${func}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--c-blue)">${pipefyJira[c.id]||'—'}</td>
+      <td><span class="trunc" style="max-width:180px;font-size:11px">${pipefyTitulo[c.id]||'—'}</span></td>
       <td><span class="trunc" style="max-width:240px;font-size:11px">${sugest}</span></td>
       <td>${benBadge}</td>
       <td style="font-size:12px">${colab}</td>

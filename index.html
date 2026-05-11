@@ -1501,6 +1501,27 @@ function openPipefyModal(c){
     <div class="ms"><div class="ms-t">Solução Paliativa</div><div class="ms-c">${fv('paliativa')}</div></div>
     <div class="ms"><div class="ms-t">Classificação Produto</div><div class="ms-c">${fv('Classificação')}</div></div>
     ${devSection}
+    <div class="ms" style="margin-top:12px;border:1px solid var(--c-blue-bd);border-radius:10px;padding:12px 14px;background:var(--c-blue-bg)">
+      <div class="ms-t" style="color:var(--c-blue);margin-bottom:10px">Jira & Título da Demanda</div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Nº Jira</div>
+          <input id="pipefy-jira-input-${cardId}" type="text" placeholder="ex: DD-123"
+            value="${pipefyJira[cardId]||''}"
+            style="width:100%;font-family:'JetBrains Mono',sans-serif;font-size:12px;padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);height:34px;box-sizing:border-box">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Título da Demanda</div>
+          <input id="pipefy-titulo-input-${cardId}" type="text" placeholder="Título da demanda no Jira"
+            value="${pipefyTitulo[cardId]||''}"
+            style="width:100%;font-size:12px;padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);height:34px;box-sizing:border-box">
+        </div>
+      </div>
+      <button id="pipefy-jira-save-${cardId}" onclick="savePipefyJiraTitulo('${cardId}')"
+        class="btn" style="background:var(--c-blue-bg);color:var(--c-blue);border-color:var(--c-blue-bd);font-size:12px">
+        💾 Salvar
+      </button>
+    </div>
     <div class="ms" style="margin-top:8px">
       <a href="https://app.pipefy.com/pipes/306026544/cards/${c.id}" target="_blank" style="color:var(--c-blue);font-size:13px">🔗 Abrir no Pipefy</a>
     </div>`;
@@ -1919,6 +1940,32 @@ function savePipefyDevolutiva(){try{localStorage.setItem('pipefy_devolutiva',JSO
 function setPipefyDevolutiva(id,val){
   if(val&&val.trim())pipefyDevolutiva[id]=val.trim();else delete pipefyDevolutiva[id];
   savePipefyDevolutiva();
+}
+
+let pipefyJira = {};
+try{const sj=localStorage.getItem('pipefy_jira');if(sj)pipefyJira=JSON.parse(sj);}catch(e){}
+function savePipefyJira(){try{localStorage.setItem('pipefy_jira',JSON.stringify(pipefyJira));}catch(e){}}
+
+let pipefyTitulo = {};
+try{const st=localStorage.getItem('pipefy_titulo');if(st)pipefyTitulo=JSON.parse(st);}catch(e){}
+function savePipefyTitulo(){try{localStorage.setItem('pipefy_titulo',JSON.stringify(pipefyTitulo));}catch(e){}}
+
+function savePipefyJiraTitulo(id){
+  const jiraEl = document.getElementById('pipefy-jira-input-'+id);
+  const tituloEl = document.getElementById('pipefy-titulo-input-'+id);
+  if(jiraEl){
+    const v = jiraEl.value.trim();
+    if(v) pipefyJira[id]=v; else delete pipefyJira[id];
+    savePipefyJira();
+  }
+  if(tituloEl){
+    const v = tituloEl.value.trim();
+    if(v) pipefyTitulo[id]=v; else delete pipefyTitulo[id];
+    savePipefyTitulo();
+  }
+  // Feedback visual
+  const btn = document.getElementById('pipefy-jira-save-'+id);
+  if(btn){ btn.textContent='✅ Salvo!'; setTimeout(()=>btn.textContent='💾 Salvar',1500); }
 }
 let pipefySortState = {c:'', a:true};
 let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos

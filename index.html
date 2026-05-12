@@ -520,7 +520,15 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   </div>
 
   <div class="filters-bar">
-    <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
+    <div class="fg">
+      <div class="fl">Origem</div>
+      <div class="multiselect-wrap" id="prio-orig-wrap">
+        <button type="button" class="multiselect-btn" id="prio-orig-btn" onclick="togglePrioOrig(event)">
+          <span id="prio-orig-label">Todas</span><span style="font-size:9px;opacity:.5">▼</span>
+        </button>
+        <div class="multiselect-dropdown" id="prio-orig-dropdown"></div>
+      </div>
+    </div>
     <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
     <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
     <div class="fg">
@@ -2422,6 +2430,41 @@ function setPrioScore(id, val){
 
 // ===== MULTISELECT DEV RESP. =====
 let prioDevRespSelected = new Set();
+let prioOrigSelected = new Set();
+
+function togglePrioOrig(e){
+  e.stopPropagation();
+  const dd=document.getElementById('prio-orig-dropdown');
+  dd.classList.toggle('open');
+}
+function togglePrioOrigOption(val){
+  if(prioOrigSelected.has(val))prioOrigSelected.delete(val);
+  else prioOrigSelected.add(val);
+  updatePrioOrigLabel();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
+function updatePrioOrigLabel(){
+  const lbl=document.getElementById('prio-orig-label');
+  if(!lbl)return;
+  const s=prioOrigSelected.size;
+  lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;
+  document.querySelectorAll('#prio-orig-dropdown .multiselect-option').forEach(opt=>{
+    const cb=opt.querySelector('input[type=checkbox]');
+    const checked=prioOrigSelected.has(opt.dataset.val);
+    if(cb)cb.checked=checked;
+    opt.classList.toggle('checked',checked);
+  });
+}
+function popPrioOrig(vals){
+  const dd=document.getElementById('prio-orig-dropdown');
+  if(!dd)return;
+  dd.innerHTML=vals.map(v=>`
+    <label class="multiselect-option${prioOrigSelected.has(v)?' checked':''}" data-val="${v}" onclick="event.preventDefault();togglePrioOrigOption('${v.replace(/'/g,"\'")}')">
+      <input type="checkbox" ${prioOrigSelected.has(v)?'checked':''} onclick="event.stopPropagation()">
+      <span>${v}</span>
+    </label>`).join('');
+}
 
 function togglePrioDevResp(e){
   e.stopPropagation();
@@ -2430,9 +2473,13 @@ function togglePrioDevResp(e){
 }
 // Fechar ao clicar fora
 document.addEventListener('click', e=>{
-  const wrap = document.getElementById('prio-devresp-wrap');
-  if(wrap && !wrap.contains(e.target)){
+  const wrapDev = document.getElementById('prio-devresp-wrap');
+  if(wrapDev && !wrapDev.contains(e.target)){
     document.getElementById('prio-devresp-dropdown')?.classList.remove('open');
+  }
+  const wrapOrig = document.getElementById('prio-orig-wrap');
+  if(wrapOrig && !wrapOrig.contains(e.target)){
+    document.getElementById('prio-orig-dropdown')?.classList.remove('open');
   }
 });
 function togglePrioDevRespOption(val){
@@ -2528,7 +2575,7 @@ function srtPrio(col){
 function popPrioFilters(){
   const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
   const fill=(id,vals)=>{const s=document.getElementById(id);if(!s)return;const c=s.value;s.innerHTML='<option value="">Todas</option>'+vals.map(v=>`<option ${v===c?'selected':''}>${v}</option>`).join('');};
-  fill('prio-fOrig',u(allPrioData,'Origem'));
+  popPrioOrig(u(allPrioData,'Origem'));
   fill('prio-fSol',u(allPrioData,'Solicitante'));
   fill('prio-fCrit',u(allPrioData,'Criticidade'));
   popPrioDevResp(u(allPrioData,'Dev Resp.'));
@@ -2581,12 +2628,11 @@ function updatePrioChartClearBtns(){
 }
 
 function getPrioFiltered(){
-  const fOrig=document.getElementById('prio-fOrig')?.value||'';
   const fSol=document.getElementById('prio-fSol')?.value||'';
   const fCrit=document.getElementById('prio-fCrit')?.value||'';
   const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
   return allPrioData.filter(r=>{
-    if(fOrig&&(r['Origem']||'')!==fOrig)return false;
+    if(prioOrigSelected.size>0&&!prioOrigSelected.has(r['Origem']||''))return false;
     if(fSol&&(r['Solicitante']||'')!==fSol)return false;
     if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
     if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;

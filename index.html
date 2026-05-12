@@ -2437,39 +2437,53 @@ function togglePrioOrig(e){
   const dd=document.getElementById('prio-orig-dropdown');
   dd.classList.toggle('open');
 }
-function togglePrioOrigOption(val, event){
-  if(event) event.stopPropagation();
-  if(prioOrigSelected.has(val))prioOrigSelected.delete(val);
-  else prioOrigSelected.add(val);
-  updatePrioOrigLabel();
-  updatePrio(getPrioFiltered());
-  updatePrioCharts();
-  // Manter dropdown aberto
-  document.getElementById('prio-orig-dropdown')?.classList.add('open');
-}
+
 function updatePrioOrigLabel(){
   const lbl=document.getElementById('prio-orig-label');
   if(!lbl)return;
   const s=prioOrigSelected.size;
   lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;
-  // Re-renderizar dropdown para atualizar ✓
-  const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
-  popPrioOrig(u(allPrioData,'Origem'));
 }
 function popPrioOrig(vals){
   const dd=document.getElementById('prio-orig-dropdown');
   if(!dd)return;
   const todasSel=prioOrigSelected.size===0;
-  dd.innerHTML=`<div class="multiselect-option${todasSel?' checked':''}" onclick="event.stopPropagation();prioOrigSelected.clear();updatePrioOrigLabel();updatePrio(getPrioFiltered());updatePrioCharts();document.getElementById('prio-orig-dropdown')?.classList.add('open');" style="border-bottom:1px solid var(--border);margin-bottom:2px">
-      <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px">${todasSel?'✓':''}</span>
+  dd.innerHTML=`<div class="multiselect-option${todasSel?' checked':''}" data-val="__todas__" style="border-bottom:1px solid var(--border);margin-bottom:2px">
+      <span class="prio-orig-check" style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px;font-size:13px">${todasSel?'✓':''}</span>
       <span>Todas</span>
     </div>`+vals.map(v=>{
     const sel=prioOrigSelected.has(v);
-    return `<div class="multiselect-option${sel?' checked':''}" data-val="${v}" onclick="togglePrioOrigOption('${v.replace(/'/g,"\'").replace(/"/g,'&quot;')}', event)">
-      <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px">${sel?'✓':''}</span>
+    return `<div class="multiselect-option${sel?' checked':''}" data-val="${v}">
+      <span class="prio-orig-check" style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px;font-size:13px">${sel?'✓':''}</span>
       <span>${v}</span>
     </div>`;
   }).join('');
+  // Usar delegação de evento no dropdown inteiro — só uma vez
+  dd._prioOrigHandler && dd.removeEventListener('click', dd._prioOrigHandler);
+  dd._prioOrigHandler = function(e){
+    const opt = e.target.closest('[data-val]');
+    if(!opt) return;
+    const val = opt.dataset.val;
+    if(val==='__todas__'){
+      prioOrigSelected.clear();
+    } else {
+      if(prioOrigSelected.has(val)) prioOrigSelected.delete(val);
+      else prioOrigSelected.add(val);
+    }
+    // Atualizar ✓ visualmente sem re-renderizar
+    dd.querySelectorAll('[data-val]').forEach(el=>{
+      const v=el.dataset.val;
+      const isSel = v==='__todas__' ? prioOrigSelected.size===0 : prioOrigSelected.has(v);
+      el.querySelector('.prio-orig-check').textContent = isSel?'✓':'';
+      el.classList.toggle('checked', isSel);
+    });
+    // Atualizar label do botão
+    const lbl=document.getElementById('prio-orig-label');
+    if(lbl){const s=prioOrigSelected.size;lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;}
+    updatePrio(getPrioFiltered());
+    updatePrioCharts();
+  };
+  dd.addEventListener('click', dd._prioOrigHandler);
 }
 
 function togglePrioDevResp(e){
@@ -2491,13 +2505,7 @@ document.addEventListener('click', e=>{
   }
 });
 
-// Impedir que cliques dentro do dropdown de origem propaguem para o document
-document.addEventListener('click', e=>{
-  const dd = document.getElementById('prio-orig-dropdown');
-  if(dd && dd.contains(e.target)){
-    e.stopPropagation();
-  }
-}, true);
+
 function togglePrioDevRespOption(val){
   if(prioDevRespSelected.has(val)) prioDevRespSelected.delete(val);
   else prioDevRespSelected.add(val);

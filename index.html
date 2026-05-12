@@ -477,22 +477,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
-  <div class="filters-bar">
-    <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
-    <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
-    <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
-    <div class="fg">
-      <div class="fl">Dev Resp.</div>
-      <div class="multiselect-wrap" id="prio-devresp-wrap">
-        <button type="button" class="multiselect-btn" id="prio-devresp-btn" onclick="togglePrioDevResp(event)">
-          <span id="prio-devresp-label">Todos</span><span style="font-size:9px;opacity:.5">▼</span>
-        </button>
-        <div class="multiselect-dropdown" id="prio-devresp-dropdown"></div>
-      </div>
-    </div>
-    <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="prio-fQ" placeholder="Demanda, Jira, ID contrato..."></div>
-  </div>
-
   <!-- Gráficos Priorização -->
   <div class="filter-pill" id="fp-prio-chart" style="background:var(--c-teal-bg);border-color:var(--c-teal-bd);color:var(--c-teal)">
     <span id="fp-prio-chart-txt"></span>
@@ -535,13 +519,32 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
+  <div class="filters-bar">
+    <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
+    <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
+    <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
+    <div class="fg">
+      <div class="fl">Dev Resp.</div>
+      <div class="multiselect-wrap" id="prio-devresp-wrap">
+        <button type="button" class="multiselect-btn" id="prio-devresp-btn" onclick="togglePrioDevResp(event)">
+          <span id="prio-devresp-label">Todos</span><span style="font-size:9px;opacity:.5">▼</span>
+        </button>
+        <div class="multiselect-dropdown" id="prio-devresp-dropdown"></div>
+      </div>
+    </div>
+    <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="prio-fQ" placeholder="Demanda, Jira, ID contrato..."></div>
+  </div>
+
   <div class="table-card">
     <div class="tcard-header">
       <div>
         <div class="tcard-title">Backlog e A Fazer</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver detalhes · Ordenado por pontuação</div>
       </div>
-      <span class="tcard-count" id="rc-prio"></span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" onclick="exportPrioXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">⬇ Exportar Excel</button>
+        <span class="tcard-count" id="rc-prio"></span>
+      </div>
     </div>
     <div class="tw" style="max-height:520px;overflow-y:auto"><table>
       <thead><tr>
@@ -2603,7 +2606,7 @@ function getPrioFiltered(){
     if(prioChartFilter.ordem){
       const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
       if(prioScores[id]===undefined)return false;
-      if((r['Classificação']||r['Ordem de Desenvolv.']||'Não informada')!==prioChartFilter.ordem)return false;
+      if(String(prioScores[id])!==prioChartFilter.ordem)return false;
     }
     return true;
   });
@@ -2671,35 +2674,43 @@ function updatePrioCharts(){
   // Gráfico 3: A Priorizar por Origem
   buildBarChart('cPrioAPriorizar', buildOrigMap(aPriorizar), 'tot-prio-apriorizadas', 'apriorizadas');
 
-  // Gráfico 4: Ordem de Desenvolvimento — barra vertical
+  // Gráfico 4: Ordem de Desenvolvimento — torre vertical por pontuação
+  // Cada barra = uma pontuação (1, 2, 3...), altura = qtd de demandas com aquela pontuação
   const activeOrdem = prioChartFilter.ordem;
-  const ordemMap={};
+  const scoreMap={};
   priorizadas.forEach(r=>{
-    const o=r['Classificação']||r['Ordem de Desenvolv.']||'Não informada';
-    ordemMap[o]=(ordemMap[o]||0)+1;
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    const score=prioScores[id];
+    if(score===undefined)return;
+    const key=String(score);
+    scoreMap[key]=(scoreMap[key]||0)+1;
   });
-  const ordemLabels=Object.keys(ordemMap).sort((a,b)=>ordemMap[b]-ordemMap[a]);
+  // Ordenar por pontuação numérica crescente
+  const scoreLabels=Object.keys(scoreMap).sort((a,b)=>Number(a)-Number(b));
   const elOrdem=document.getElementById('tot-prio-ordem');
   if(elOrdem)elOrdem.textContent='Total: '+priorizadas.length;
   if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
   ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
     type:'bar',
-    data:{labels:ordemLabels,datasets:[{
-      data:ordemLabels.map(l=>ordemMap[l]),
-      backgroundColor:ordemLabels.map((l,i)=>{
+    data:{labels:scoreLabels.map(l=>'Pontuação '+l),datasets:[{
+      data:scoreLabels.map(l=>scoreMap[l]),
+      backgroundColor:scoreLabels.map((l,i)=>{
         if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
         if(activeOrdem&&activeOrdem!==l)return colors[i%colors.length]+'22';
         return colors[i%colors.length]+'99';
       }),
-      borderColor:ordemLabels.map((_,i)=>colors[i%colors.length]),
-      borderWidth:ordemLabels.map(l=>activeOrdem===l?3:1.5),
+      borderColor:scoreLabels.map((_,i)=>colors[i%colors.length]),
+      borderWidth:scoreLabels.map(l=>activeOrdem===l?3:1.5),
       borderRadius:6
     }]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} demandas${activeOrdem===ordemLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} demanda${ctx.parsed.y!==1?'s':''} com pontuação ${scoreLabels[ctx.dataIndex]}${activeOrdem===scoreLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}
+      },
       onClick(evt,els){
         if(!els.length)return;
-        const lbl=ordemLabels[els[0].index];
+        const lbl=scoreLabels[els[0].index];
         prioChartFilter.ordem=prioChartFilter.ordem===lbl?'':lbl;
         updatePrioChartPill();
         updatePrioChartClearBtns();
@@ -2707,11 +2718,50 @@ function updatePrioCharts(){
         updatePrioCharts();
       },
       scales:{
-        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},
-        x:{ticks:{font:{size:10},color:gt(),maxRotation:30},grid:{display:false}}
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11},color:gt()},grid:{color:gbg()},title:{display:true,text:'Qtd de Demandas',color:gt(),font:{size:10}}},
+        x:{ticks:{font:{size:10},color:gt()},grid:{display:false}}
       }
     },plugins:[numPlugin]
   });
+}
+
+function exportPrioXLSX(){
+  const data = getPrioFiltered();
+  if(!data.length){alert('Nenhum dado para exportar.');return;}
+  const dk='Demanda / Tarefa / Projeto';
+  const rows = data.map(r=>{
+    const id=r['Jira']||r['ID Contrato']||r[dk];
+    const score=prioScores[id];
+    // Buscar sugestão e afeta no allTriagem
+    const t=allTriagem.find(tr=>
+      (tr['Jira']&&tr['Jira']===r['Jira'])||
+      (tr['ID']&&tr['ID']===r['ID Contrato'])||
+      (tr['Código Pipe']&&tr['Código Pipe']===r['Código Pipe'])
+    );
+    return {
+      'Jira': r['Jira']||'',
+      'Ano Base': r['Ano Base']||'',
+      'Demanda / Tarefa / Projeto': r[dk]||'',
+      'Qtd Lojas': r['Qtd Lojas']||'',
+      'ID Contrato': r['ID Contrato']||'',
+      'Classificação': r['Classificação']||'',
+      'Origem': r['Origem']||'',
+      'Solicitante': r['Solicitante']||'',
+      'Esforço': r['Esforço']||'',
+      'Criticidade': r['Criticidade']||'',
+      'Status': r['Status']||'',
+      'Ordem de Desenvolv.': r['Ordem de Desenvolv.']||'',
+      'Pontuação': score!==undefined?score:'',
+      'Sugestão de Melhoria': (r['Registre a sugestão de melhoria']||t?.['Registre a sugestão de melhoria']||''),
+      'Como isso afeta o uso do sistema': (r['Como isso afeta o uso do sistema?']||t?.['Como isso afeta o uso do sistema?']||''),
+    };
+  });
+  const cols=['Jira','Ano Base','Demanda / Tarefa / Projeto','Qtd Lojas','ID Contrato','Classificação','Origem','Solicitante','Esforço','Criticidade','Status','Ordem de Desenvolv.','Pontuação','Sugestão de Melhoria','Como isso afeta o uso do sistema'];
+  const ws=XLSX.utils.json_to_sheet(rows,{header:cols});
+  ws['!cols']=[{wch:12},{wch:8},{wch:40},{wch:10},{wch:14},{wch:18},{wch:20},{wch:20},{wch:10},{wch:14},{wch:20},{wch:24},{wch:10},{wch:50},{wch:50}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Backlog e A Fazer');
+  XLSX.writeFile(wb,'Priorizacao_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
 }
 
 async function loadData(){

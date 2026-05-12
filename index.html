@@ -2449,21 +2449,24 @@ function updatePrioOrigLabel(){
   if(!lbl)return;
   const s=prioOrigSelected.size;
   lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;
-  document.querySelectorAll('#prio-orig-dropdown .multiselect-option').forEach(opt=>{
-    const cb=opt.querySelector('input[type=checkbox]');
-    const checked=prioOrigSelected.has(opt.dataset.val);
-    if(cb)cb.checked=checked;
-    opt.classList.toggle('checked',checked);
-  });
+  // Re-renderizar dropdown para atualizar ✓
+  const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
+  popPrioOrig(u(allPrioData,'Origem'));
 }
 function popPrioOrig(vals){
   const dd=document.getElementById('prio-orig-dropdown');
   if(!dd)return;
-  dd.innerHTML=vals.map(v=>`
-    <label class="multiselect-option${prioOrigSelected.has(v)?' checked':''}" data-val="${v}" onclick="event.preventDefault();togglePrioOrigOption('${v.replace(/'/g,"\'")}')">
-      <input type="checkbox" ${prioOrigSelected.has(v)?'checked':''} onclick="event.stopPropagation()">
+  const todasSel=prioOrigSelected.size===0;
+  dd.innerHTML=`<div class="multiselect-option${todasSel?' checked':''}" onclick="prioOrigSelected.clear();updatePrioOrigLabel();updatePrio(getPrioFiltered());updatePrioCharts();" style="border-bottom:1px solid var(--border);margin-bottom:2px">
+      <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px">${todasSel?'✓':''}</span>
+      <span>Todas</span>
+    </div>`+vals.map(v=>{
+    const sel=prioOrigSelected.has(v);
+    return `<div class="multiselect-option${sel?' checked':''}" data-val="${v}" onclick="togglePrioOrigOption('${v.replace(/'/g,"\'").replace(/"/g,'&quot;')}')">
+      <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px">${sel?'✓':''}</span>
       <span>${v}</span>
-    </label>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function togglePrioDevResp(e){

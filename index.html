@@ -493,6 +493,40 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="fg wide"><div class="fl">Buscar demanda, Jira, solicitante...</div><input type="text" id="prio-fQ" placeholder="Demanda, Jira, ID contrato..."></div>
   </div>
 
+  <!-- Gráficos Priorização -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Total por Origem (Backlog)</div><span class="chart-badge" id="tot-prio-origem"></span></div>
+      </div>
+      <div class="chart-sub">Todas as demandas do backlog por origem</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioOrigem" role="img"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Priorizadas por Origem</div><span class="chart-badge" id="tot-prio-priorizadas"></span></div>
+      </div>
+      <div class="chart-sub">Demandas com pontuação (já priorizadas)</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioPriorizadas" role="img"></canvas></div>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">A Priorizar por Origem</div><span class="chart-badge" id="tot-prio-apriorizadas"></span></div>
+      </div>
+      <div class="chart-sub">Demandas sem pontuação (aguardando priorização)</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioAPriorizar" role="img"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Ordem de Desenvolvimento</div><span class="chart-badge" id="tot-prio-ordem"></span></div>
+      </div>
+      <div class="chart-sub">Distribuição das demandas priorizadas por ordem de dev.</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioOrdem" role="img"></canvas></div>
+    </div>
+  </div>
+
   <div class="table-card">
     <div class="tcard-header">
       <div>
@@ -2450,6 +2484,7 @@ function updatePrio(data){
 
   const rcEl=document.getElementById('rc-prio');
   if(rcEl)rcEl.textContent=`${data.length} itens`;
+  updatePrioCharts();
 
   const dk='Demanda / Tarefa / Projeto';
   _cachePrio=[];
@@ -2510,6 +2545,83 @@ function popPrioFilters(){
 });
 document.getElementById('prio-fQ')?.addEventListener('input',()=>updatePrio(getPrioFiltered()));
 
+function updatePrioCharts(){
+  if(!allPrioData.length) return;
+  const colors = gc();
+
+  // Separar priorizadas (com score) e a priorizar (sem score)
+  const priorizadas = allPrioData.filter(r=>{
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    return prioScores[id]!==undefined;
+  });
+  const aPriorizar = allPrioData.filter(r=>{
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    return prioScores[id]===undefined;
+  });
+
+  // Helpers
+  function buildOrigMap(arr){
+    const m={};
+    arr.forEach(r=>{const o=r['Origem']||'Não informada';m[o]=(m[o]||0)+1;});
+    return m;
+  }
+  function buildBarChart(canvasId, dataMap, badgeId, title){
+    const labels=Object.keys(dataMap).sort((a,b)=>dataMap[b]-dataMap[a]).slice(0,10);
+    const el=document.getElementById(badgeId);
+    if(el)el.textContent='Total: '+Object.values(dataMap).reduce((a,b)=>a+b,0);
+    if(ch[canvasId])ch[canvasId].destroy();
+    ch[canvasId]=new Chart(document.getElementById(canvasId),{
+      type:'bar',
+      data:{labels,datasets:[{
+        data:labels.map(l=>dataMap[l]),
+        backgroundColor:labels.map((_,i)=>colors[i%colors.length]+'88'),
+        borderColor:labels.map((_,i)=>colors[i%colors.length]),
+        borderWidth:1.5,borderRadius:5
+      }]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas`}}},
+        scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},
+                y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+      },plugins:[numPlugin]
+    });
+  }
+
+  // Gráfico 1: Total por Origem (Backlog)
+  buildBarChart('cPrioOrigem', buildOrigMap(allPrioData), 'tot-prio-origem');
+
+  // Gráfico 2: Priorizadas por Origem
+  buildBarChart('cPrioPriorizadas', buildOrigMap(priorizadas), 'tot-prio-priorizadas');
+
+  // Gráfico 3: A Priorizar por Origem
+  buildBarChart('cPrioAPriorizar', buildOrigMap(aPriorizar), 'tot-prio-apriorizadas');
+
+  // Gráfico 4: Ordem de Desenvolvimento (só das priorizadas)
+  const ordemMap={};
+  priorizadas.forEach(r=>{
+    const o=r['Classificação']||r['Ordem de Desenvolv.']||'Não informada';
+    ordemMap[o]=(ordemMap[o]||0)+1;
+  });
+  const ordemLabels=Object.keys(ordemMap).sort((a,b)=>ordemMap[b]-ordemMap[a]);
+  const elOrdem=document.getElementById('tot-prio-ordem');
+  if(elOrdem)elOrdem.textContent='Total: '+priorizadas.length;
+  if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
+  ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
+    type:'doughnut',
+    data:{labels:ordemLabels,datasets:[{
+      data:ordemLabels.map(l=>ordemMap[l]),
+      backgroundColor:ordemLabels.map((_,i)=>colors[i%colors.length]+'CC'),
+      borderColor:ordemLabels.map((_,i)=>colors[i%colors.length]),
+      borderWidth:2
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{
+        legend:{position:'right',labels:{font:{size:10},color:gt(),boxWidth:10,padding:6}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}}
+      }
+    }
+  });
+}
+
 async function loadData(){
   document.querySelectorAll('.btn').forEach(b=>{if(b.onclick?.toString().includes('loadData')||b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizando...';b.disabled=true;}});
   try{
@@ -2524,6 +2636,7 @@ async function loadData(){
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
     popPrioFilters();
     updatePrio(getPrioFiltered());
+    updatePrioCharts();
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.querySelectorAll('[id^="lu"]').forEach(el=>el.textContent=`Atualizado às ${now}`);
     document.getElementById('err1').style.display='none';

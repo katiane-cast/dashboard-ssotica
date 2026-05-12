@@ -494,19 +494,25 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   </div>
 
   <!-- Gráficos Priorização -->
+  <div class="filter-pill" id="fp-prio-chart" style="background:var(--c-teal-bg);border-color:var(--c-teal-bd);color:var(--c-teal)">
+    <span id="fp-prio-chart-txt"></span>
+    <button onclick="clearPrioChartFilter()" style="color:var(--c-teal)">✕ Limpar filtro do gráfico</button>
+  </div>
   <div class="charts-row">
     <div class="chart-card">
       <div class="chart-header">
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Total por Origem (Backlog)</div><span class="chart-badge" id="tot-prio-origem"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-origem" onclick="clearPrioFilter('origem')" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Todas as demandas do backlog por origem</div>
+      <div class="chart-sub">Todas as demandas do backlog · clique para filtrar</div>
       <div style="position:relative;height:220px"><canvas id="cPrioOrigem" role="img"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-header">
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Priorizadas por Origem</div><span class="chart-badge" id="tot-prio-priorizadas"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-priorizadas" onclick="clearPrioFilter('priorizadas')" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Demandas com pontuação (já priorizadas)</div>
+      <div class="chart-sub">Demandas com pontuação · clique para filtrar</div>
       <div style="position:relative;height:220px"><canvas id="cPrioPriorizadas" role="img"></canvas></div>
     </div>
   </div>
@@ -514,15 +520,17 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="chart-card">
       <div class="chart-header">
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">A Priorizar por Origem</div><span class="chart-badge" id="tot-prio-apriorizadas"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-apriorizadas" onclick="clearPrioFilter('apriorizadas')" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Demandas sem pontuação (aguardando priorização)</div>
+      <div class="chart-sub">Demandas sem pontuação · clique para filtrar</div>
       <div style="position:relative;height:220px"><canvas id="cPrioAPriorizar" role="img"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-header">
         <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Ordem de Desenvolvimento</div><span class="chart-badge" id="tot-prio-ordem"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-ordem" onclick="clearPrioFilter('ordem')" style="display:none">✕ Limpar</button>
       </div>
-      <div class="chart-sub">Distribuição das demandas priorizadas por ordem de dev.</div>
+      <div class="chart-sub">Demandas priorizadas por classificação · clique para filtrar</div>
       <div style="position:relative;height:220px"><canvas id="cPrioOrdem" role="img"></canvas></div>
     </div>
   </div>
@@ -2453,23 +2461,7 @@ function popPrioDevResp(vals){
     </label>`).join('');
 }
 
-function getPrioFiltered(){
-  const fOrig=document.getElementById('prio-fOrig')?.value||'';
-  const fSol=document.getElementById('prio-fSol')?.value||'';
-  const fCrit=document.getElementById('prio-fCrit')?.value||'';
-  const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
-  return allPrioData.filter(r=>{
-    if(fOrig&&(r['Origem']||'')!==fOrig)return false;
-    if(fSol&&(r['Solicitante']||'')!==fSol)return false;
-    if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
-    if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;
-    if(fQ){
-      const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem'],r['Dev Resp.']].join(' ').toLowerCase();
-      if(!h.includes(fQ))return false;
-    }
-    return true;
-  });
-}
+// getPrioFiltered movida para cima com suporte a filtros de gráfico
 
 function updatePrio(data){
   // Ordenar: com score primeiro (desc), depois sem score
@@ -2545,11 +2537,82 @@ function popPrioFilters(){
 });
 document.getElementById('prio-fQ')?.addEventListener('input',()=>updatePrio(getPrioFiltered()));
 
+// Filtros ativos dos gráficos de priorização
+let prioChartFilter = {origem:'', priorizadas:'', apriorizadas:'', ordem:''};
+
+function clearPrioFilter(type){
+  prioChartFilter[type]='';
+  updatePrioChartPill();
+  updatePrioChartClearBtns();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
+
+function clearPrioChartFilter(){
+  prioChartFilter={origem:'',priorizadas:'',apriorizadas:'',ordem:''};
+  updatePrioChartPill();
+  updatePrioChartClearBtns();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
+
+function updatePrioChartPill(){
+  const pill=document.getElementById('fp-prio-chart');
+  const txt=document.getElementById('fp-prio-chart-txt');
+  if(!pill)return;
+  const parts=[];
+  if(prioChartFilter.origem) parts.push('Origem: '+prioChartFilter.origem);
+  if(prioChartFilter.priorizadas) parts.push('Priorizadas - Origem: '+prioChartFilter.priorizadas);
+  if(prioChartFilter.apriorizadas) parts.push('A Priorizar - Origem: '+prioChartFilter.apriorizadas);
+  if(prioChartFilter.ordem) parts.push('Ordem: '+prioChartFilter.ordem);
+  if(parts.length){pill.classList.add('show');txt.textContent='Filtro ativo — '+parts.join(' · ');}
+  else pill.classList.remove('show');
+}
+
+function updatePrioChartClearBtns(){
+  const map={origem:'clr-prio-origem',priorizadas:'clr-prio-priorizadas',apriorizadas:'clr-prio-apriorizadas',ordem:'clr-prio-ordem'};
+  Object.entries(map).forEach(([key,id])=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=prioChartFilter[key]?'inline-flex':'none';
+  });
+}
+
+function getPrioFiltered(){
+  const fOrig=document.getElementById('prio-fOrig')?.value||'';
+  const fSol=document.getElementById('prio-fSol')?.value||'';
+  const fCrit=document.getElementById('prio-fCrit')?.value||'';
+  const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
+  return allPrioData.filter(r=>{
+    if(fOrig&&(r['Origem']||'')!==fOrig)return false;
+    if(fSol&&(r['Solicitante']||'')!==fSol)return false;
+    if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
+    if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;
+    if(fQ){const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem'],r['Dev Resp.']].join(' ').toLowerCase();if(!h.includes(fQ))return false;}
+    // Filtros dos gráficos
+    if(prioChartFilter.origem&&(r['Origem']||'Não informada')!==prioChartFilter.origem)return false;
+    if(prioChartFilter.priorizadas){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]===undefined)return false;
+      if((r['Origem']||'Não informada')!==prioChartFilter.priorizadas)return false;
+    }
+    if(prioChartFilter.apriorizadas){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]!==undefined)return false;
+      if((r['Origem']||'Não informada')!==prioChartFilter.apriorizadas)return false;
+    }
+    if(prioChartFilter.ordem){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]===undefined)return false;
+      if((r['Classificação']||r['Ordem de Desenvolv.']||'Não informada')!==prioChartFilter.ordem)return false;
+    }
+    return true;
+  });
+}
+
 function updatePrioCharts(){
   if(!allPrioData.length) return;
   const colors = gc();
 
-  // Separar priorizadas (com score) e a priorizar (sem score)
   const priorizadas = allPrioData.filter(r=>{
     const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
     return prioScores[id]!==undefined;
@@ -2559,13 +2622,12 @@ function updatePrioCharts(){
     return prioScores[id]===undefined;
   });
 
-  // Helpers
   function buildOrigMap(arr){
-    const m={};
-    arr.forEach(r=>{const o=r['Origem']||'Não informada';m[o]=(m[o]||0)+1;});
-    return m;
+    const m={};arr.forEach(r=>{const o=r['Origem']||'Não informada';m[o]=(m[o]||0)+1;});return m;
   }
-  function buildBarChart(canvasId, dataMap, badgeId, title){
+
+  function buildBarChart(canvasId, dataMap, badgeId, filterKey){
+    const activeFilter = prioChartFilter[filterKey];
     const labels=Object.keys(dataMap).sort((a,b)=>dataMap[b]-dataMap[a]).slice(0,10);
     const el=document.getElementById(badgeId);
     if(el)el.textContent='Total: '+Object.values(dataMap).reduce((a,b)=>a+b,0);
@@ -2574,12 +2636,26 @@ function updatePrioCharts(){
       type:'bar',
       data:{labels,datasets:[{
         data:labels.map(l=>dataMap[l]),
-        backgroundColor:labels.map((_,i)=>colors[i%colors.length]+'88'),
+        backgroundColor:labels.map((l,i)=>{
+          if(activeFilter&&activeFilter===l)return colors[i%colors.length]+'EE';
+          if(activeFilter&&activeFilter!==l)return colors[i%colors.length]+'22';
+          return colors[i%colors.length]+'88';
+        }),
         borderColor:labels.map((_,i)=>colors[i%colors.length]),
-        borderWidth:1.5,borderRadius:5
+        borderWidth:labels.map(l=>activeFilter===l?3:1.5),
+        borderRadius:5
       }]},
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas`}}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas${activeFilter===labels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+        onClick(evt,els){
+          if(!els.length)return;
+          const lbl=labels[els[0].index];
+          prioChartFilter[filterKey]=prioChartFilter[filterKey]===lbl?'':lbl;
+          updatePrioChartPill();
+          updatePrioChartClearBtns();
+          updatePrio(getPrioFiltered());
+          updatePrioCharts();
+        },
         scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},
                 y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
       },plugins:[numPlugin]
@@ -2587,15 +2663,16 @@ function updatePrioCharts(){
   }
 
   // Gráfico 1: Total por Origem (Backlog)
-  buildBarChart('cPrioOrigem', buildOrigMap(allPrioData), 'tot-prio-origem');
+  buildBarChart('cPrioOrigem', buildOrigMap(allPrioData), 'tot-prio-origem', 'origem');
 
   // Gráfico 2: Priorizadas por Origem
-  buildBarChart('cPrioPriorizadas', buildOrigMap(priorizadas), 'tot-prio-priorizadas');
+  buildBarChart('cPrioPriorizadas', buildOrigMap(priorizadas), 'tot-prio-priorizadas', 'priorizadas');
 
   // Gráfico 3: A Priorizar por Origem
-  buildBarChart('cPrioAPriorizar', buildOrigMap(aPriorizar), 'tot-prio-apriorizadas');
+  buildBarChart('cPrioAPriorizar', buildOrigMap(aPriorizar), 'tot-prio-apriorizadas', 'apriorizadas');
 
-  // Gráfico 4: Ordem de Desenvolvimento (só das priorizadas)
+  // Gráfico 4: Ordem de Desenvolvimento — barra vertical
+  const activeOrdem = prioChartFilter.ordem;
   const ordemMap={};
   priorizadas.forEach(r=>{
     const o=r['Classificação']||r['Ordem de Desenvolv.']||'Não informada';
@@ -2606,19 +2683,34 @@ function updatePrioCharts(){
   if(elOrdem)elOrdem.textContent='Total: '+priorizadas.length;
   if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
   ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
-    type:'doughnut',
+    type:'bar',
     data:{labels:ordemLabels,datasets:[{
       data:ordemLabels.map(l=>ordemMap[l]),
-      backgroundColor:ordemLabels.map((_,i)=>colors[i%colors.length]+'CC'),
+      backgroundColor:ordemLabels.map((l,i)=>{
+        if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
+        if(activeOrdem&&activeOrdem!==l)return colors[i%colors.length]+'22';
+        return colors[i%colors.length]+'99';
+      }),
       borderColor:ordemLabels.map((_,i)=>colors[i%colors.length]),
-      borderWidth:2
+      borderWidth:ordemLabels.map(l=>activeOrdem===l?3:1.5),
+      borderRadius:6
     }]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
-      plugins:{
-        legend:{position:'right',labels:{font:{size:10},color:gt(),boxWidth:10,padding:6}},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} demandas${activeOrdem===ordemLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+      onClick(evt,els){
+        if(!els.length)return;
+        const lbl=ordemLabels[els[0].index];
+        prioChartFilter.ordem=prioChartFilter.ordem===lbl?'':lbl;
+        updatePrioChartPill();
+        updatePrioChartClearBtns();
+        updatePrio(getPrioFiltered());
+        updatePrioCharts();
+      },
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},
+        x:{ticks:{font:{size:10},color:gt(),maxRotation:30},grid:{display:false}}
       }
-    }
+    },plugins:[numPlugin]
   });
 }
 

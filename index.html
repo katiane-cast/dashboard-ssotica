@@ -551,6 +551,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <button class="btn" onclick="exportPrioXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">⬇ Exportar Excel</button>
+        <button id="btn-publicar-scores" class="btn" onclick="publicarPontuacoes()" style="font-size:11px;padding:5px 12px;background:var(--c-blue-bg);color:var(--c-blue);border-color:var(--c-blue-bd);display:none">📤 Publicar Pontuações</button>
         <span class="tcard-count" id="rc-prio"></span>
       </div>
     </div>
@@ -1920,6 +1921,9 @@ function applyAdminVisibility(){
   const thCls = document.getElementById('th-classificacao');
   if(thCls) thCls.style.display = ok ? '' : 'none';
 
+  // Mostrar botão Publicar Pontuações só para admin
+  const btnPub = document.getElementById('btn-publicar-scores');
+  if(btnPub) btnPub.style.display = ok ? 'inline-flex' : 'none';
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
   // Re-renderizar tabela de priorização para mostrar/esconder select de pontuação
@@ -2869,6 +2873,31 @@ function exportPrioXLSX(){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Backlog e A Fazer');
   XLSX.writeFile(wb,'Priorizacao_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
+}
+
+async function publicarPontuacoes(){
+  const btn = document.getElementById('btn-publicar-scores');
+  if(btn){ btn.textContent='⏳ Publicando...'; btn.disabled=true; }
+  try{
+    // Pegar pontuações do localStorage (só as > 0)
+    const local = {};
+    try{const sp=localStorage.getItem('prio_scores');if(sp)Object.assign(local,JSON.parse(sp));}catch(e){}
+    const toSend = Object.entries(local).filter(([k,v])=>v>0);
+    if(!toSend.length){ alert('Nenhuma pontuação > 0 para publicar.'); return; }
+    let ok=0, err=0;
+    for(const [jira, score] of toSend){
+      try{
+        await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(jira)}&score=${score}`);
+        ok++;
+      }catch(e){ err++; }
+    }
+    if(btn){ btn.textContent='✅ Publicado!'; }
+    alert(`Publicado! ${ok} pontuação(ões) enviada(s) para a planilha.${err>0?' '+err+' erro(s).':''}`);
+    setTimeout(()=>{ if(btn){ btn.textContent='📤 Publicar Pontuações'; btn.disabled=false; } },2000);
+  }catch(e){
+    alert('Erro ao publicar: '+e.message);
+    if(btn){ btn.textContent='📤 Publicar Pontuações'; btn.disabled=false; }
+  }
 }
 
 async function loadData(){

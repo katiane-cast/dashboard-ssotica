@@ -2419,13 +2419,41 @@ let prioSortState = {c:'score', a:false}; // padrão: maior score no topo
 let _cachePrio = [];
 
 // Pontuações salvas no localStorage
+const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_d3YfhVikMw5lgEjXt14heZjVTMFdbGEnfm-kdEKt_EzDzUF_whQMxIDrBDMqL0_/exec';
+
 let prioScores = {};
-try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e){}
+// Carregar pontuações da planilha ao iniciar
+async function loadScoresFromSheet(){
+  try{
+    const r = await fetch(SCORES_PROXY + '?action=getScores');
+    const data = await r.json();
+    if(data.ok && data.scores){
+      prioScores = data.scores;
+      // Também salvar no localStorage como cache
+      try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
+    }
+  }catch(e){
+    // Fallback: usar cache do localStorage
+    try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e2){}
+  }
+}
+
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
-function setPrioScore(id, val){
+
+async function setPrioScore(id, val){
   if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
   savePrioScores();
   updatePrio(getPrioFiltered());
+  updatePrioCharts();
+  // Salvar na planilha (pontuação 0 não é enviada)
+  try{
+    const score = val===''||val===null||val===undefined ? '' : parseInt(val);
+    if(score !== '' && score !== 0){
+      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
+    }
+  }catch(e){
+    console.warn('Erro ao salvar pontuação na planilha:', e);
+  }
 }
 
 // ===== MULTISELECT DEV RESP. =====
@@ -2845,8 +2873,10 @@ async function loadData(){
     // Atualizar filtros dos dropdowns SEM resetar seleção atual
     popF(allData,allTriagem);
     // Dados de priorização: Backlog e A Fazer
-    allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
+    allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return !u.includes('FEITO')&&!u.includes('DONE')&&!u.includes('PRODU');});
     popPrioFilters();
+    // Carregar pontuações da planilha e depois atualizar
+    await loadScoresFromSheet();
     updatePrio(getPrioFiltered());
     updatePrioCharts();
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});

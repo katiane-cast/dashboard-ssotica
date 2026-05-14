@@ -2794,7 +2794,7 @@ function updatePrioCharts(){
   if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
   ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
     type:'bar',
-    data:{labels:scoreLabels.map(l=>`${parseInt(l)+1}ª`),datasets:[{
+    data:{labels:scoreLabels.map(l=>parseInt(l)===0?'Meses Anteriores':`${parseInt(l)}ª`),datasets:[{
       data:scoreLabels.map(l=>scoreMap[l]),
       backgroundColor:scoreLabels.map((l,i)=>{
         if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
@@ -2808,7 +2808,7 @@ function updatePrioCharts(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} demanda${ctx.parsed.y!==1?'s':''} com pontuação ${scoreLabels[ctx.dataIndex]}${activeOrdem===scoreLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}
+        tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} demanda${ctx.parsed.y!==1?'s':''} ${parseInt(scoreLabels[ctx.dataIndex])===0?'priorizadas em meses anteriores':`na ${scoreLabels[ctx.dataIndex]}ª posição`}${activeOrdem===scoreLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}
       },
       onClick(evt,els){
         if(!els.length)return;

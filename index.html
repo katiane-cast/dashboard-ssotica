@@ -1922,6 +1922,8 @@ function applyAdminVisibility(){
 
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
+  // Re-renderizar tabela de priorização para mostrar/esconder select de pontuação
+  if(allPrioData.length) updatePrio(getPrioFiltered());
 }
 
 function toggleAdminLogin(){

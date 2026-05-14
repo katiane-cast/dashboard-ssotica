@@ -2333,29 +2333,17 @@ let _cachePrio = [];
 
 // Pontuações salvas no localStorage
 let prioScores = {};
-
-// Carregar pontuações da coluna Q da planilha (visível para todos)
-// Admin também pode pontuar localmente — pontuação 0 fica só no localStorage
 function loadScoresFromData(){
-  // Ler pontuações do allData (coluna Q = Ordem de Desenvolv.)
-  const fromSheet = {};
   allData.forEach(r=>{
-    const jira = (r['Jira']||'').trim();
-    const ordem = (r['Ordem de Desenvolv.']||'').trim();
-    if(jira && ordem && !isNaN(ordem) && parseInt(ordem) > 0){
-      fromSheet[jira] = parseInt(ordem);
-    }
+    const jira=(r['Jira']||'').trim();
+    const ordem=(r['Ordem de Desenvolv.']||'').trim();
+    if(jira&&ordem&&!isNaN(ordem)&&parseInt(ordem)>0) prioScores[jira]=parseInt(ordem);
   });
-  // Mesclar: planilha tem prioridade, mas score=0 do localStorage prevalece
-  const local = {};
-  try{const sp=localStorage.getItem('prio_scores');if(sp)Object.assign(local,JSON.parse(sp));}catch(e){}
-  prioScores = {...fromSheet};
-  Object.keys(local).forEach(k=>{ if(local[k]===0) prioScores[k]=0; });
-  try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}
+  // Score 0 do localStorage prevalece (só admin, não vai p planilha)
+  try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{if(loc[k]===0)prioScores[k]=0;});}}catch(e){}
 }
-
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
-function setPrioScore(id, val){
+function setPrioScore(id,val){
   if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
   savePrioScores();
   updatePrio(getPrioFiltered());
@@ -2508,7 +2496,7 @@ async function loadData(){
     popF(allData,allTriagem);
     // Dados de priorização: Backlog e A Fazer
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
-    loadScoresFromData(); // ler pontuações da coluna Q para todos
+    loadScoresFromData();
     popPrioFilters();
     updatePrio(getPrioFiltered());
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});

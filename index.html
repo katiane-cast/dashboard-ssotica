@@ -2425,18 +2425,63 @@ const SCORES_PROXY = 'https://script.google.com/macros/s/AKfycbwt_d3YfhVikMw5lgE
 
 let prioScores = {};
 // Carregar pontuações da planilha ao iniciar
+const SUPABASE_URL = 'https://ylcepqtwrfjksukpxpzk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QKE2AD6zgMliQuUb2PWrzQ_xNkxL6wG';
+
+async function syncScoresFromSheet(){
+  // Importar pontuações existentes da planilha para o Supabase (só admin, uma vez)
+  if(!isAdmin()) return;
+  try{
+    const PRIO_GID = '1153705235';
+    const url = `https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${PRIO_GID}&t=${Date.now()}`;
+    const r = await fetch(url);
+    if(!r.ok) return;
+    const text = await r.text();
+    const rows = parseCSV(text);
+    const toSync = [];
+    rows.forEach(row=>{
+      const jira = (row['Jira']||'').trim();
+      const ordem = (row['Ordem de Desenvolv.']||'').trim();
+      if(jira && ordem && !isNaN(ordem) && parseInt(ordem) > 0){
+        toSync.push({jira, pontuacao: parseInt(ordem)});
+      }
+    });
+    if(toSync.length > 0){
+      await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(toSync)
+      });
+    }
+  }catch(e){ console.warn('Sync error:', e); }
+}
+
 async function loadScoresFromSheet(){
   try{
-    const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(SCORES_PROXY + '?action=getScores');
-    const r = await fetch(proxyUrl);
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/scores?select=jira,pontuacao`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    });
+    if(!r.ok) throw new Error('Supabase error');
     const data = await r.json();
-    if(data.ok && data.scores){
-      prioScores = data.scores;
-      // Também salvar no localStorage como cache
-      try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
-    }
+    const scores = {};
+    data.forEach(row=>{
+      if(row.jira && row.pontuacao !== null) scores[row.jira] = row.pontuacao;
+    });
+    // Mesclar: pontuação 0 é só local
+    const local = {};
+    try{const sp=localStorage.getItem('prio_scores');if(sp)Object.assign(local,JSON.parse(sp));}catch(e){}
+    prioScores = {...scores};
+    Object.keys(local).forEach(k=>{ if(local[k]===0) prioScores[k]=0; });
+    try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
   }catch(e){
-    // Fallback: usar cache do localStorage
     try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e2){}
   }
 }
@@ -2448,15 +2493,37 @@ async function setPrioScore(id, val){
   savePrioScores();
   updatePrio(getPrioFiltered());
   updatePrioCharts();
-  // Salvar na planilha (pontuação 0 não é enviada)
+  // Salvar no Supabase + planilha (pontuação 0 não é enviada)
   try{
-    const score = val===''||val===null||val===undefined ? '' : parseInt(val);
-    if(score !== '' && score !== 0){
-      const setUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
-      await fetch(setUrl);
+    const score = val===''||val===null||val===undefined ? null : parseInt(val);
+    if(score !== null && score !== 0){
+      // Salvar no Supabase
+      await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({jira: id, pontuacao: score})
+      });
+      // Salvar na planilha via Apps Script
+      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
+    } else if(score === null){
+      // Remover do Supabase
+      await fetch(`${SUPABASE_URL}/rest/v1/scores?jira=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      });
+      // Limpar na planilha
+      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=`);
     }
   }catch(e){
-    console.warn('Erro ao salvar pontuação na planilha:', e);
+    console.warn('Erro ao salvar pontuação:', e);
   }
 }
 
@@ -2882,7 +2949,8 @@ async function loadData(){
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return !u.includes('FEITO')&&!u.includes('DONE')&&!u.includes('PRODU');});
     popPrioFilters();
     // Carregar pontuações da planilha e depois atualizar
-    await loadScoresFromSheet();
+    if(isAdmin()) await syncScoresFromSheet(); // planilha → Supabase (só admin)
+    await loadScoresFromSheet(); // Supabase → dashboard (todos)
     updatePrio(getPrioFiltered());
     updatePrioCharts();
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});

@@ -2887,7 +2887,7 @@ async function publicarPontuacoes(){
     let ok=0, err=0;
     for(const [jira, score] of toSend){
       try{
-        await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(jira)}&score=${score}`);
+        await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(jira)}&score=${score}`, {mode:'no-cors'});
         ok++;
       }catch(e){ err++; }
     }

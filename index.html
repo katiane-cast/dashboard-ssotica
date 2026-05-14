@@ -554,7 +554,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <span class="tcard-count" id="rc-prio"></span>
       </div>
     </div>
-    <div class="tw" style="max-height:520px;overflow-y:auto"><table>
+    <div class="tw" style="max-height:1040px;overflow-y:auto"><table>
       <thead><tr>
         <th>Jira</th>
         <th>Ano Base</th>
@@ -1216,12 +1216,12 @@ function parseCSV(t){
 function sBadgePrio(s){
   if(!s)return'<span class="badge b-other">—</span>';
   const u=s.toUpperCase();
-  if(u.includes('FAZER'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
-  if(u.includes('DESENVOLVIMENTO'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
-  if(u.includes('TESTE'))return`<span class="badge b-teste"><span class="bd"></span>${s}</span>`;
-  if(u.includes('BACKLOG'))return`<span class="badge b-fazer"><span class="bd"></span>${s}</span>`;
-  if(u.includes('SUSPENSA'))return`<span class="badge b-suspensa"><span class="bd"></span>${s}</span>`;
-  if(u.includes('PRODU')||u.includes('FEITO')||u.includes('DONE'))return`<span class="badge b-feito"><span class="bd"></span>${s}</span>`;
+  if(u.includes('SUSPENSA'))return`<span class="badge" style="background:#FEE2E2;color:#B91C1C;border:1px solid #EF4444;font-weight:700"><span class="bd" style="background:#EF4444"></span>${s}</span>`;
+  if(u.includes('TESTE'))return`<span class="badge" style="background:#CFFAFE;color:#0E7490;border:1px solid #06B6D4;font-weight:700"><span class="bd" style="background:#06B6D4"></span>${s}</span>`;
+  if(u.includes('DESENVOLVIMENTO'))return`<span class="badge" style="background:#FEF9C3;color:#854D0E;border:1px solid #EAB308;font-weight:700"><span class="bd" style="background:#EAB308"></span>${s}</span>`;
+  if(u.includes('FAZER'))return`<span class="badge" style="background:#DCFCE7;color:#15803D;border:1px solid #22C55E;font-weight:700"><span class="bd" style="background:#22C55E"></span>${s}</span>`;
+  if(u.includes('BACKLOG'))return`<span class="badge" style="background:#F3F4F6;color:#374151;border:1px solid #6B7280;font-weight:700"><span class="bd" style="background:#6B7280"></span>${s}</span>`;
+  if(u.includes('PRODU')||u.includes('FEITO')||u.includes('DONE'))return`<span class="badge" style="background:#D1FAE5;color:#065F46;border:1px solid #16A34A;font-weight:700"><span class="bd" style="background:#16A34A"></span>${s}</span>`;
   return`<span class="badge b-other"><span class="bd"></span>${s}</span>`;
 }
 function sBadge(s){
@@ -2594,7 +2594,7 @@ function updatePrio(data){
     return `<tr onclick="_openPrioFromCache(${idx})" style="cursor:pointer${score!==undefined?';background:var(--c-blue-bg)':''}" title="${score!==undefined?'Pontuação: '+score:'Sem pontuação'}">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['Ano Base']||'—'}</td>
-      <td><span class="trunc">${r[dk]||'—'}</span></td>
+      <td><span class="trunc" title="${(r[dk]||'').replace(/"/g,'&quot;')}" style="cursor:help">${r[dk]||'—'}</span></td>
       <td style="font-size:11px">${r['Qtd Lojas']||'—'}</td>
       <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
       <td>${r['Classificação']?`<span class="badge b-other" style="font-size:10px">${r['Classificação']}</span>`:'—'}</td>
@@ -2609,7 +2609,7 @@ function updatePrio(data){
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`<span style="font-size:12px;color:var(--text2)">${score!==undefined?score:'—'}</span>`}
+          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`}
       </td>
     </tr>`;
   }).join('');

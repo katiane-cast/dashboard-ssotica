@@ -591,49 +591,49 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="kpi-row">
     <div class="kpi-card kpi-slate" id="kv-c-total" onclick="fKpi('viaveis','')">
       <div class="kpi-icon">📋</div>
-      <div class="kpi-label">Total</div>
+      <div class="kpi-label">Total <span style="font-size:8px;font-weight:400;color:var(--c-blue);background:var(--c-blue-bg);padding:1px 4px;border-radius:3px;white-space:nowrap;margin-left:2px" id="badge-ano">por ano</span></div>
       <div class="kpi-value" id="kv-total">—</div>
-      <div class="kpi-sub">demandas</div>
+      <div class="kpi-sub" id="kv-sub-total">demandas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-total" style="width:100%"></div></div>
     </div>
     <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
       <div class="kpi-icon">⏳</div>
-      <div class="kpi-label">Em Fila</div>
+      <div class="kpi-label">Em Fila <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
       <div class="kpi-value" id="kv-fila">—</div>
       <div class="kpi-sub">próximas a fazer</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
     </div>
     <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
       <div class="kpi-icon">✅</div>
-      <div class="kpi-label">Entregues</div>
+      <div class="kpi-label">Entregues <span style="font-size:8px;font-weight:400;color:var(--c-blue);background:var(--c-blue-bg);padding:1px 4px;border-radius:3px;white-space:nowrap;margin-left:2px" id="badge-ano">por ano</span></div>
       <div class="kpi-value" id="kv-entregue">—</div>
-      <div class="kpi-sub">em produção</div>
+      <div class="kpi-sub" id="kv-sub-entregue">em produção</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
     </div>
     <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
       <div class="kpi-icon">📦</div>
-      <div class="kpi-label">Backlog</div>
+      <div class="kpi-label">Backlog <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
       <div class="kpi-value" id="kv-backlog">—</div>
       <div class="kpi-sub">em espera</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-backlog"></div></div>
     </div>
     <div class="kpi-card kpi-blue" id="kv-c-dev" onclick="fKpi('viaveis','DESENVOLVIMENTO')">
       <div class="kpi-icon">⚙️</div>
-      <div class="kpi-label">Em Desenvolvimento</div>
+      <div class="kpi-label">Em Desenvolvimento <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
       <div class="kpi-value" id="kv-dev">—</div>
       <div class="kpi-sub">em andamento</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-dev"></div></div>
     </div>
     <div class="kpi-card kpi-violet" id="kv-c-teste" onclick="fKpi('viaveis','TESTE')">
       <div class="kpi-icon">🧪</div>
-      <div class="kpi-label">Em Teste</div>
+      <div class="kpi-label">Em Teste <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
       <div class="kpi-value" id="kv-teste">—</div>
       <div class="kpi-sub">validação</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-teste"></div></div>
     </div>
     <div class="kpi-card kpi-rose" id="kv-c-suspensa" onclick="fKpi('viaveis','SUSPENSA')">
       <div class="kpi-icon">⏸️</div>
-      <div class="kpi-label">Suspensas</div>
+      <div class="kpi-label">Suspensas <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
       <div class="kpi-value" id="kv-suspensa">—</div>
       <div class="kpi-sub">pausadas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-suspensa"></div></div>
@@ -753,7 +753,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="kpi-row">
     <div class="kpi-card kpi-slate" id="ki-c-total" onclick="fKpi('inviaveis','')">
       <div class="kpi-icon">📊</div>
-      <div class="kpi-label">Total</div><div class="kpi-value" id="ki-total">—</div>
+      <div class="kpi-label">Total <span style="font-size:8px;font-weight:400;color:var(--c-blue);background:var(--c-blue-bg);padding:1px 4px;border-radius:3px;white-space:nowrap">por ano</span></div><div class="kpi-value" id="ki-total">—</div>
       <div class="kpi-sub">analisadas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--c-slate)"></div></div>
     </div>
@@ -890,7 +890,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="kpi-row" id="pipefy-kpis">
     <div class="kpi-card kpi-blue" onclick="clearPipefyFilter()" title="Limpar filtros">
       <div class="kpi-icon">📥</div>
-      <div class="kpi-label">Total</div>
+      <div class="kpi-label">Total <span style="font-size:8px;font-weight:400;color:var(--c-blue);background:var(--c-blue-bg);padding:1px 4px;border-radius:3px;white-space:nowrap">por ano</span></div>
       <div class="kpi-value" id="pp-total">—</div>
       <div class="kpi-sub">em análise</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--c-blue)"></div></div>
@@ -1595,7 +1595,15 @@ function updateP1(data){
    // Total e Entregues: filtram por ano (Ano Base e Entrega em Produção)
    const total=(!yearFilter||yearFilter==='all')?allData.length:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter).length;
    const totalAll=allData.length;
-   const nEnt=allData.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;
+   const nEnt=allData.filter(r=>{
+     const ep=r['Entrega em Produção']||'';
+     if(!ep||ep.toLowerCase().includes('definir'))return false;
+     const p=ep.split('/');
+     if(p.length<3)return false;
+     const a=parseInt(p[2]);const ay=a>100?a:2000+a;
+     if(!yearFilter||yearFilter==='all') return ay===2025||ay===2026;
+     return String(ay)===yearFilter;
+   }).length;
    // Demais cards: cenário atual completo (sem filtro de ano)
    const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nBacklog=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
@@ -1603,6 +1611,9 @@ function updateP1(data){
    const nTeste=allData.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
    const nSus=allData.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
    const anoSuffix=yearFilter&&yearFilter!=='all'?' ('+yearFilter+')':'';
+   // Atualizar badges de ano nos cards Total e Entregues
+   const anoLabel=yearFilter&&yearFilter!=='all'?yearFilter:'Todos os Anos';
+   document.querySelectorAll('#badge-ano').forEach(el=>{el.textContent=anoLabel;});
    const _kvT=document.getElementById('kv-total');if(_kvT)_kvT.textContent=total+(total!==totalAll?' /'+totalAll:'');
    document.getElementById('kv-total')?.closest('.kpi-card')?.querySelector('.kpi-sub')&&(document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix);
    document.getElementById('kv-fila')&&(document.getElementById('kv-fila').textContent=nFila);

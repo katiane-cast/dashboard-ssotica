@@ -2879,23 +2879,27 @@ async function publicarPontuacoes(){
   const btn = document.getElementById('btn-publicar-scores');
   if(btn){ btn.textContent='⏳ Publicando...'; btn.disabled=true; }
   try{
-    // Pegar pontuações do localStorage (só as > 0)
     const local = {};
     try{const sp=localStorage.getItem('prio_scores');if(sp)Object.assign(local,JSON.parse(sp));}catch(e){}
     const toSend = Object.entries(local).filter(([k,v])=>v>0);
-    if(!toSend.length){ alert('Nenhuma pontuação > 0 para publicar.'); return; }
-    let ok=0, err=0;
+    if(!toSend.length){ alert('Nenhuma pontuação > 0 para publicar.'); if(btn){btn.textContent='📤 Publicar Pontuações';btn.disabled=false;} return; }
+    // Usar iframe oculto — usa sessão Google corporativa ativa no browser
+    let ok=0;
     for(const [jira, score] of toSend){
-      try{
-        await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(jira)}&score=${score}`, {mode:'no-cors'});
-        ok++;
-      }catch(e){ err++; }
+      const url=`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(jira)}&score=${score}`;
+      const iframe=document.createElement('iframe');
+      iframe.style.cssText='display:none;width:0;height:0;border:0';
+      iframe.src=url;
+      document.body.appendChild(iframe);
+      await new Promise(r=>setTimeout(r,1000));
+      document.body.removeChild(iframe);
+      ok++;
     }
     if(btn){ btn.textContent='✅ Publicado!'; }
-    alert(`Publicado! ${ok} pontuação(ões) enviada(s) para a planilha.${err>0?' '+err+' erro(s).':''}`);
+    alert(`${ok} pontuação(ões) publicada(s) na planilha!`);
     setTimeout(()=>{ if(btn){ btn.textContent='📤 Publicar Pontuações'; btn.disabled=false; } },2000);
   }catch(e){
-    alert('Erro ao publicar: '+e.message);
+    alert('Erro: '+e.message);
     if(btn){ btn.textContent='📤 Publicar Pontuações'; btn.disabled=false; }
   }
 }

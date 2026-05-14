@@ -2435,7 +2435,7 @@ function loadScoresFromData(){
 
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
 
-function setPrioScore(id, val){
+async function setPrioScore(id, val){
   if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
   savePrioScores();
   updatePrio(getPrioFiltered());

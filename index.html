@@ -769,11 +769,17 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">devolvidas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-dev"></div></div>
     </div>
-    <div class="kpi-card kpi-violet" id="ki-c-dup" onclick="fKpi('inviaveis','Duplicada')">
-      <div class="kpi-icon">🔁</div>
-      <div class="kpi-label">Duplicadas</div><div class="kpi-value" id="ki-duplicada">—</div>
-      <div class="kpi-sub">duplicadas</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-dup"></div></div>
+    <div class="kpi-card kpi-emerald" id="ki-c-via" onclick="fKpi('inviaveis','Viável')">
+      <div class="kpi-icon">✔️</div>
+      <div class="kpi-label">Viáveis</div><div class="kpi-value" id="ki-viavel">—</div>
+      <div class="kpi-sub">aprovadas</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-via"></div></div>
+    </div>
+    <div class="kpi-card kpi-amber" id="ki-c-parc" onclick="fKpi('inviaveis','Parcialmente')">
+      <div class="kpi-icon">🔀</div>
+      <div class="kpi-label">Parc. Viáveis</div><div class="kpi-value" id="ki-parcial">—</div>
+      <div class="kpi-sub">parcialmente</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-parc"></div></div>
     </div>
     <div class="kpi-card kpi-teal" id="ki-c-painel" onclick="fKpi('inviaveis','Painel')">
       <div class="kpi-icon">📌</div>
@@ -1368,9 +1374,6 @@ function getTF(){
   const fC=document.getElementById('i-fC').value,fQ=document.getElementById('i-fQ').value.toLowerCase();
   const kpi=KF.inviaveis;
   return allTriagem.filter(r=>{
-    const su=(r['Status']||'').toUpperCase();
-    if((su.includes('VIÁV')||su.includes('VIAV'))&&!su.includes('INVI')&&!su.includes('PARCIAL'))return false;
-    if(su.includes('PARCIAL'))return false;
     if(fT&&r['Triagem']!==fT)return false;
     if(fS&&r['Status']!==fS)return false;
     if(fC&&r['Colab']!==fC)return false;
@@ -1589,10 +1592,12 @@ function _removePipefyDevolutiva(id){
 
 // ===== PAGE 1 =====
 function updateP1(data){
+   // Total e Entregues: filtram por ano (Ano Base e Entrega em Produção)
    const total=(!yearFilter||yearFilter==='all')?allData.length:allData.filter(r=>String(r['Ano Base']||'').trim()===yearFilter).length;
    const totalAll=allData.length;
-   const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nEnt=allData.filter(r=>{const ep=r['Entrega em Produção']||'';if(!ep||ep.toLowerCase().includes('definir'))return false;const p=ep.split('/');if(p.length<2)return false;if(!yearFilter||yearFilter==='all')return true;if(p.length<3)return false;const a=parseInt(p[2]);const ay=a>100?a:2000+a;return String(ay)===yearFilter;}).length;
+   // Demais cards: cenário atual completo (sem filtro de ano)
+   const nFila=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('FAZER')&&!u.includes('SUSPENSA');}).length;
    const nBacklog=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG');}).length;
    const nDev=allData.filter(r=>(r['Status']||'').toUpperCase().includes('DESENVOLVIMENTO')).length;
    const nTeste=allData.filter(r=>(r['Status']||'').toUpperCase().includes('TESTE')).length;
@@ -1764,26 +1769,23 @@ function updateP1(data){
 
 // ===== PAGE 2 =====
 function updateP2(data){
-  const baseTriagem=allTriagem.filter(r=>{
-    const su=(r['Status']||'').toUpperCase();
-    if((su.includes('VIÁV')||su.includes('VIAV'))&&!su.includes('INVI')&&!su.includes('PARCIAL'))return false;
-    if(su.includes('PARCIAL'))return false;
-    return true;
-  });
-  const tot=baseTriagem.length;
-  const nInv=baseTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('invi')).length;
-  const nDev=baseTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('devolv')).length;
-  const nDup=baseTriagem.filter(r=>(r['Status']||'').toUpperCase().includes('DUPLIC')).length;
-  const nPainel=baseTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PAINEL')||s.includes('ESTRATÉG')||s.includes('ESTRATEG');}).length;
+  const tot=allTriagem.length;
+  const nInv=allTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('invi')).length;
+  const nDev=allTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('devolv')).length;
+  const nVia=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return(s.includes('VIÁV')||s.includes('VIAV'))&&!s.includes('INVI')&&!s.includes('PARCIAL');}).length;
+  const nParc=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PARCIAL');}).length;
+  const nPainel=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PAINEL')||s.includes('ESTRATÉG')||s.includes('ESTRATEG');}).length;
   document.getElementById('ki-total')&&(document.getElementById('ki-total').textContent=tot||'—');
   document.getElementById('ki-inviavel')&&(document.getElementById('ki-inviavel').textContent=nInv||'—');
   document.getElementById('ki-devolvido')&&(document.getElementById('ki-devolvido').textContent=nDev||'—');
-  document.getElementById('ki-duplicada')&&(document.getElementById('ki-duplicada').textContent=nDup||'—');
+  document.getElementById('ki-viavel')&&(document.getElementById('ki-viavel').textContent=nVia||'—');
+  document.getElementById('ki-parcial')&&(document.getElementById('ki-parcial').textContent=nParc||'—');
   document.getElementById('ki-painel')&&(document.getElementById('ki-painel').textContent=nPainel||'—');
   if(tot>0){
     document.getElementById('ki-bar-inv').style.cssText=`width:${Math.round(nInv/tot*100)}%;background:var(--c-rose)`;
     document.getElementById('ki-bar-dev').style.cssText=`width:${Math.round(nDev/tot*100)}%;background:var(--c-violet)`;
-    document.getElementById('ki-bar-dup').style.cssText=`width:${Math.round(nDup/tot*100)}%;background:var(--c-violet)`;
+    document.getElementById('ki-bar-via').style.cssText=`width:${Math.round(nVia/tot*100)}%;background:var(--c-emerald)`;
+    document.getElementById('ki-bar-parc').style.cssText=`width:${Math.round(nParc/tot*100)}%;background:var(--c-amber)`;
     document.getElementById('ki-bar-painel').style.cssText=`width:${Math.round(nPainel/tot*100)}%;background:var(--c-teal)`;
   }
   document.getElementById('rc-inv')&&(document.getElementById('rc-inv').textContent=`${data.length} itens`);
@@ -1922,8 +1924,6 @@ function applyAdminVisibility(){
 
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
-  // Re-renderizar tabela de priorização para mostrar/esconder select de pontuação
-  if(allPrioData.length) updatePrio(getPrioFiltered());
 }
 
 function toggleAdminLogin(){
@@ -2424,23 +2424,19 @@ let _cachePrio = [];
 const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_d3YfhVikMw5lgEjXt14heZjVTMFdbGEnfm-kdEKt_EzDzUF_whQMxIDrBDMqL0_/exec';
 
 let prioScores = {};
-// Ler pontuações da coluna Q da planilha — visível para todos
-function loadScoresFromData(){
-  // Ler pontuações da coluna Q para todos
-  // Número = pontuação real | Texto (não número) = pontuação 0 (aparece como texto)
-  allData.forEach(r=>{
-    const jira=(r['Jira']||'').trim();
-    const ordem=(r['Ordem de Desenvolv.']||'').trim();
-    if(!jira||!ordem)return;
-    if(!isNaN(ordem)){
-      prioScores[jira]=parseInt(ordem); // número → pontuação
-    } else {
-      prioScores[jira]=0; // texto → pontuação 0 (texto fica em r['Ordem de Desenvolv.'])
+// Carregar pontuações da planilha ao iniciar
+async function loadScoresFromSheet(){
+  try{
+    const r = await fetch(SCORES_PROXY + '?action=getScores');
+    const data = await r.json();
+    if(data.ok && data.scores){
+      prioScores = data.scores;
+      // Também salvar no localStorage como cache
+      try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
     }
-  });
-  // Admin sobrescreve com localStorage
-  if(isAdmin()){
-    try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{prioScores[k]=loc[k];});}}catch(e){}
+  }catch(e){
+    // Fallback: usar cache do localStorage
+    try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e2){}
   }
 }
 
@@ -2615,10 +2611,7 @@ function updatePrio(data){
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`${score===0
-  ? `<span style="font-size:11px;color:var(--text2);font-style:italic;display:block;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;')}">${r['Ordem de Desenvolv.']||'—'}</span>`
-  : `<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`
-}`}
+          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`}
       </td>
     </tr>`;
   }).join('');
@@ -2799,7 +2792,7 @@ function updatePrioCharts(){
   if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
   ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
     type:'bar',
-    data:{labels:scoreLabels.map(l=>`${parseInt(l)+1}ª`),datasets:[{
+    data:{labels:scoreLabels.map(l=>'Pontuação '+l),datasets:[{
       data:scoreLabels.map(l=>scoreMap[l]),
       backgroundColor:scoreLabels.map((l,i)=>{
         if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
@@ -2883,8 +2876,9 @@ async function loadData(){
     popF(allData,allTriagem);
     // Dados de priorização: Backlog e A Fazer
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return !u.includes('FEITO')&&!u.includes('DONE')&&!u.includes('PRODU');});
-    loadScoresFromData();
     popPrioFilters();
+    // Carregar pontuações da planilha e depois atualizar
+    await loadScoresFromSheet();
     updatePrio(getPrioFiltered());
     updatePrioCharts();
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});

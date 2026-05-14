@@ -1612,8 +1612,8 @@ function updateP1(data){
    const nSus=allData.filter(r=>(r['Status']||'').toUpperCase().includes('SUSPENSA')).length;
    const anoSuffix=yearFilter&&yearFilter!=='all'?' ('+yearFilter+')':'';
    // Atualizar badges de ano nos cards Total e Entregues
-   const anoLabel=yearFilter&&yearFilter!=='all'?yearFilter:'Todos os Anos';
-   document.querySelectorAll('#badge-ano').forEach(el=>{el.textContent=anoLabel;});
+   const badgeAnoTxt=yearFilter&&yearFilter!=='all'?yearFilter:'Todos os Anos';
+   document.querySelectorAll('#badge-ano').forEach(el=>{el.textContent=badgeAnoTxt;});
    const _kvT=document.getElementById('kv-total');if(_kvT)_kvT.textContent=total+(total!==totalAll?' /'+totalAll:'');
    document.getElementById('kv-total')?.closest('.kpi-card')?.querySelector('.kpi-sub')&&(document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix);
    document.getElementById('kv-fila')&&(document.getElementById('kv-fila').textContent=nFila);

@@ -2612,7 +2612,7 @@ function updatePrio(data){
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
           </select>`:`${score===0
   ? `<span style="font-size:11px;color:var(--text2);font-style:italic;display:block;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;')}">${r['Ordem de Desenvolv.']||'—'}</span>`
-  : `<span style="font-size:12px;font-weight:600;color:var(--c-blue);${score===0?'cursor:help;text-decoration:underline dotted':''}" title="${score===0?(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;'):''}">${score!==undefined?score:'—'}</span>`
+  : `<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`
 }`}
       </td>
     </tr>`;
@@ -2864,6 +2864,22 @@ function exportPrioXLSX(){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Backlog e A Fazer');
   XLSX.writeFile(wb,'Priorizacao_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
+}
+
+// Carrega pontuações salvas no Google Apps Script proxy (se disponível)
+// Função que estava ausente e causava ReferenceError abortando loadData()
+async function loadScoresFromSheet(){
+  try{
+    if(!SCORES_PROXY) return;
+    const r = await fetch(SCORES_PROXY + '?action=getScores', {method:'GET'});
+    if(!r.ok) return;
+    const data = await r.json();
+    if(data && typeof data === 'object'){
+      Object.keys(data).forEach(k=>{ if(data[k]!==null && data[k]!==undefined) prioScores[k]=parseInt(data[k]); });
+    }
+  } catch(e){
+    // Proxy indisponível — continua normalmente com scores do localStorage
+  }
 }
 
 async function loadData(){

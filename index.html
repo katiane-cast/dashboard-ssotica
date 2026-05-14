@@ -1935,6 +1935,7 @@ function applyAdminVisibility(){
 
   // Re-renderizar tabela pipefy se estiver carregada
   if(allPipefyCards.length) updatePipefyPage(getPipefyFiltered());
+  if(allPrioData.length) updatePrio(getPrioFiltered());
 }
 
 function toggleAdminLogin(){
@@ -2435,39 +2436,20 @@ let _cachePrio = [];
 const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_d3YfhVikMw5lgEjXt14heZjVTMFdbGEnfm-kdEKt_EzDzUF_whQMxIDrBDMqL0_/exec';
 
 let prioScores = {};
-// Carregar pontuações da planilha ao iniciar
-async function loadScoresFromSheet(){
-  try{
-    const r = await fetch(SCORES_PROXY + '?action=getScores');
-    const data = await r.json();
-    if(data.ok && data.scores){
-      prioScores = data.scores;
-      // Também salvar no localStorage como cache
-      try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
-    }
-  }catch(e){
-    // Fallback: usar cache do localStorage
-    try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e2){}
+function loadScoresFromData(){
+  allData.forEach(r=>{
+    const jira=(r['Jira']||'').trim();
+    const ordem=(r['Ordem de Desenvolv.']||'').trim();
+    if(!jira||!ordem)return;
+    if(!isNaN(ordem))prioScores[jira]=parseInt(ordem);
+    else prioScores[jira]=0;
+  });
+  if(isAdmin()){
+    try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{prioScores[k]=loc[k];});}}catch(e){}
   }
 }
-
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
 
-async function setPrioScore(id, val){
-  if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
-  savePrioScores();
-  updatePrio(getPrioFiltered());
-  updatePrioCharts();
-  // Salvar na planilha (pontuação 0 não é enviada)
-  try{
-    const score = val===''||val===null||val===undefined ? '' : parseInt(val);
-    if(score !== '' && score !== 0){
-      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
-    }
-  }catch(e){
-    console.warn('Erro ao salvar pontuação na planilha:', e);
-  }
-}
 
 // ===== MULTISELECT DEV RESP. =====
 let prioDevRespSelected = new Set();
@@ -2622,7 +2604,10 @@ function updatePrio(data){
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`}
+          </select>`:`${score===0
+  ? `<span style="font-size:11px;color:var(--text2);font-style:italic;display:block;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;')}">${r['Ordem de Desenvolv.']||'—'}</span>`
+  : `<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`
+}`}
       </td>
     </tr>`;
   }).join('');
@@ -2803,7 +2788,7 @@ function updatePrioCharts(){
   if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
   ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
     type:'bar',
-    data:{labels:scoreLabels.map(l=>'Pontuação '+l),datasets:[{
+    data:{labels:scoreLabels.map(l=>`${parseInt(l)+1}ª`),datasets:[{
       data:scoreLabels.map(l=>scoreMap[l]),
       backgroundColor:scoreLabels.map((l,i)=>{
         if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
@@ -2887,6 +2872,7 @@ async function loadData(){
     popF(allData,allTriagem);
     // Dados de priorização: Backlog e A Fazer
     allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return !u.includes('FEITO')&&!u.includes('DONE')&&!u.includes('PRODU');});
+    loadScoresFromData();
     popPrioFilters();
     // Carregar pontuações da planilha e depois atualizar
     await loadScoresFromSheet();

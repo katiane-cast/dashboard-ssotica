@@ -477,8 +477,58 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
   </div>
 
+  <!-- Gráficos Priorização -->
+  <div class="filter-pill" id="fp-prio-chart" style="background:var(--c-teal-bg);border-color:var(--c-teal-bd);color:var(--c-teal)">
+    <span id="fp-prio-chart-txt"></span>
+    <button onclick="clearPrioChartFilter()" style="color:var(--c-teal)">✕ Limpar filtro do gráfico</button>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Total por Origem (Backlog)</div><span class="chart-badge" id="tot-prio-origem"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-origem" onclick="clearPrioFilter('origem')" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Todas as demandas do backlog · clique para filtrar</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioOrigem" role="img"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Priorizadas por Origem</div><span class="chart-badge" id="tot-prio-priorizadas"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-priorizadas" onclick="clearPrioFilter('priorizadas')" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas com pontuação · clique para filtrar</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioPriorizadas" role="img"></canvas></div>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">A Priorizar por Origem</div><span class="chart-badge" id="tot-prio-apriorizadas"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-apriorizadas" onclick="clearPrioFilter('apriorizadas')" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas sem pontuação · clique para filtrar</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioAPriorizar" role="img"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div style="display:flex;align-items:center;gap:8px"><div class="chart-title">Ordem de Desenvolvimento</div><span class="chart-badge" id="tot-prio-ordem"></span></div>
+        <button class="chart-clear-btn" id="clr-prio-ordem" onclick="clearPrioFilter('ordem')" style="display:none">✕ Limpar</button>
+      </div>
+      <div class="chart-sub">Demandas priorizadas por classificação · clique para filtrar</div>
+      <div style="position:relative;height:220px"><canvas id="cPrioOrdem" role="img"></canvas></div>
+    </div>
+  </div>
+
   <div class="filters-bar">
-    <div class="fg"><div class="fl">Origem</div><select id="prio-fOrig"><option value="">Todas</option></select></div>
+    <div class="fg">
+      <div class="fl">Origem</div>
+      <div class="multiselect-wrap" id="prio-orig-wrap">
+        <button type="button" class="multiselect-btn" id="prio-orig-btn" onclick="togglePrioOrig(event)">
+          <span id="prio-orig-label">Todas</span><span style="font-size:9px;opacity:.5">▼</span>
+        </button>
+        <div class="multiselect-dropdown" id="prio-orig-dropdown"></div>
+      </div>
+    </div>
     <div class="fg"><div class="fl">Solicitante</div><select id="prio-fSol"><option value="">Todos</option></select></div>
     <div class="fg"><div class="fl">Criticidade</div><select id="prio-fCrit"><option value="">Todas</option></select></div>
     <div class="fg">
@@ -499,9 +549,12 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div class="tcard-title">Backlog e A Fazer</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">👆 Clique em qualquer linha para ver detalhes · Ordenado por pontuação</div>
       </div>
-      <span class="tcard-count" id="rc-prio"></span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" onclick="exportPrioXLSX()" style="font-size:11px;padding:5px 12px;background:var(--c-emerald-bg);color:var(--c-emerald);border-color:var(--c-emerald-bd)">⬇ Exportar Excel</button>
+        <span class="tcard-count" id="rc-prio"></span>
+      </div>
     </div>
-    <div class="tw" style="max-height:520px;overflow-y:auto"><table>
+    <div class="tw" style="max-height:1040px;overflow-y:auto"><table>
       <thead><tr>
         <th>Jira</th>
         <th>Ano Base</th>
@@ -915,7 +968,10 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <thead><tr>
         <th>Card #</th>
         <th onclick="srtPipefy('title')">Título/Cliente <span class="si">↕</span></th>
-        <th>Funcionalidade</th>
+        <th>Cliente</th>
+        <th>Jira</th>
+        <th>Título Demanda</th>
+        <th>Tipo Cliente</th>
         <th>Sugestão</th>
         <th>Beneficia outros?</th>
         <th>Colaborador</th>
@@ -1160,12 +1216,12 @@ function parseCSV(t){
 function sBadgePrio(s){
   if(!s)return'<span class="badge b-other">—</span>';
   const u=s.toUpperCase();
-  if(u.includes('FAZER'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
-  if(u.includes('DESENVOLVIMENTO'))return`<span class="badge b-dev"><span class="bd"></span>${s}</span>`;
-  if(u.includes('TESTE'))return`<span class="badge b-teste"><span class="bd"></span>${s}</span>`;
-  if(u.includes('BACKLOG'))return`<span class="badge b-fazer"><span class="bd"></span>${s}</span>`;
-  if(u.includes('SUSPENSA'))return`<span class="badge b-suspensa"><span class="bd"></span>${s}</span>`;
-  if(u.includes('PRODU')||u.includes('FEITO')||u.includes('DONE'))return`<span class="badge b-feito"><span class="bd"></span>${s}</span>`;
+  if(u.includes('SUSPENSA'))return`<span class="badge" style="background:#FEE2E2;color:#B91C1C;border:1px solid #EF4444;font-weight:700"><span class="bd" style="background:#EF4444"></span>${s}</span>`;
+  if(u.includes('TESTE'))return`<span class="badge" style="background:#CFFAFE;color:#0E7490;border:1px solid #06B6D4;font-weight:700"><span class="bd" style="background:#06B6D4"></span>${s}</span>`;
+  if(u.includes('DESENVOLVIMENTO'))return`<span class="badge" style="background:#FEF9C3;color:#854D0E;border:1px solid #EAB308;font-weight:700"><span class="bd" style="background:#EAB308"></span>${s}</span>`;
+  if(u.includes('FAZER'))return`<span class="badge" style="background:#DCFCE7;color:#15803D;border:1px solid #22C55E;font-weight:700"><span class="bd" style="background:#22C55E"></span>${s}</span>`;
+  if(u.includes('BACKLOG'))return`<span class="badge" style="background:#F3F4F6;color:#374151;border:1px solid #6B7280;font-weight:700"><span class="bd" style="background:#6B7280"></span>${s}</span>`;
+  if(u.includes('PRODU')||u.includes('FEITO')||u.includes('DONE'))return`<span class="badge" style="background:#D1FAE5;color:#065F46;border:1px solid #16A34A;font-weight:700"><span class="bd" style="background:#16A34A"></span>${s}</span>`;
   return`<span class="badge b-other"><span class="bd"></span>${s}</span>`;
 }
 function sBadge(s){
@@ -1501,6 +1557,20 @@ function openPipefyModal(c){
     <div class="ms"><div class="ms-t">Solução Paliativa</div><div class="ms-c">${fv('paliativa')}</div></div>
     <div class="ms"><div class="ms-t">Classificação Produto</div><div class="ms-c">${fv('Classificação')}</div></div>
     ${devSection}
+    <div class="ms" style="margin-top:12px;border:1px solid var(--c-blue-bd);border-radius:10px;padding:12px 14px;background:var(--c-blue-bg)">
+      <div class="ms-t" style="color:var(--c-blue);margin-bottom:10px">Jira & Título da Demanda</div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-bottom:4px">Nº Jira</div>
+          <input id="pipefy-jira-input-${cardId}" type="text" placeholder="ex: DD-123" value="${pipefyJira[cardId]||''}" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);height:34px;box-sizing:border-box">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-bottom:4px">Título da Demanda</div>
+          <input id="pipefy-titulo-input-${cardId}" type="text" placeholder="Título da demanda no Jira" value="${pipefyTitulo[cardId]||''}" style="width:100%;font-size:12px;padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);height:34px;box-sizing:border-box">
+        </div>
+      </div>
+      <button id="pipefy-jira-save-${cardId}" onclick="savePipefyJiraTitulo('${cardId}')" class="btn" style="background:var(--c-blue-bg);color:var(--c-blue);border-color:var(--c-blue-bd);font-size:12px">💾 Salvar</button>
+    </div>
     <div class="ms" style="margin-top:8px">
       <a href="https://app.pipefy.com/pipes/306026544/cards/${c.id}" target="_blank" style="color:var(--c-blue);font-size:13px">🔗 Abrir no Pipefy</a>
     </div>`;
@@ -1920,6 +1990,20 @@ function setPipefyDevolutiva(id,val){
   if(val&&val.trim())pipefyDevolutiva[id]=val.trim();else delete pipefyDevolutiva[id];
   savePipefyDevolutiva();
 }
+let pipefyJira={};
+try{const sj=localStorage.getItem('pipefy_jira');if(sj)pipefyJira=JSON.parse(sj);}catch(e){}
+function savePipefyJira(){try{localStorage.setItem('pipefy_jira',JSON.stringify(pipefyJira));}catch(e){}}
+let pipefyTitulo={};
+try{const st=localStorage.getItem('pipefy_titulo');if(st)pipefyTitulo=JSON.parse(st);}catch(e){}
+function savePipefyTitulo(){try{localStorage.setItem('pipefy_titulo',JSON.stringify(pipefyTitulo));}catch(e){}}
+function savePipefyJiraTitulo(id){
+  const jiraEl=document.getElementById('pipefy-jira-input-'+id);
+  const tituloEl=document.getElementById('pipefy-titulo-input-'+id);
+  if(jiraEl){const v=jiraEl.value.trim();if(v)pipefyJira[id]=v;else delete pipefyJira[id];savePipefyJira();}
+  if(tituloEl){const v=tituloEl.value.trim();if(v)pipefyTitulo[id]=v;else delete pipefyTitulo[id];savePipefyTitulo();}
+  const btn=document.getElementById('pipefy-jira-save-'+id);
+  if(btn){btn.textContent='✅ Salvo!';setTimeout(()=>btn.textContent='💾 Salvar',1500);}
+}
 let pipefySortState = {c:'', a:true};
 let pipefyChartFilter = {func: '', ben: '', colab: ''}; // filtro ativo pelos gráficos
 
@@ -2227,9 +2311,12 @@ function updatePipefyPage(cards){
         </div>
       </td>` : '';
     return `<tr onclick="_openPipefyFromCache(${idx})" style="cursor:pointer">
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td>
-      <td style="font-size:12px;font-weight:500">${getFieldVal(c.fields,'nome do cliente')||c.title||'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);user-select:text;cursor:text" onclick="event.stopPropagation()" title="Clique para selecionar · Ctrl+C para copiar">#${c.id}</td>
+      <td style="font-size:12px;font-weight:500">${getFieldVal(c.fields,'nome do cliente')||'—'}</td>
       <td><span class="trunc" style="max-width:160px;font-size:11px">${func}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--c-blue)">${pipefyJira[c.id]||'—'}</td>
+      <td><span class="trunc" style="max-width:180px;font-size:11px">${pipefyTitulo[c.id]||'—'}</span></td>
+      <td>${(()=>{const t=getFieldVal(c.fields,'Tipo do cliente')||'';const tl=t.toLowerCase();if(tl.includes('diamante'))return'<span class="badge" style="background:#EBF8FF;color:#2B6CB0">💎 Diamante</span>';if(tl.includes('ouro'))return'<span class="badge" style="background:#FFFBEB;color:#92400E">🥇 Ouro</span>';if(tl.includes('prata'))return'<span class="badge" style="background:#F1F5F9;color:#374151">🥈 Prata</span>';if(tl.includes('bronze'))return'<span class="badge" style="background:#FFF7ED;color:#9A3412">🥉 Bronze</span>';return t?`<span class="badge b-other">${t}</span>`:'<span style="color:var(--text3)">—</span>';})()}</td>
       <td><span class="trunc" style="max-width:240px;font-size:11px">${sugest}</span></td>
       <td>${benBadge}</td>
       <td style="font-size:12px">${colab}</td>
@@ -2262,8 +2349,8 @@ function exportPipefyXLSX(){
       'Colab': fv('Colaborador')||(c.assignees?.[0]?.name)||'',
       'Cliente': fv('nome do cliente'),
       'ID': fv('ID do contrato'),
-      'Jira': '',
-      'Título do Card': c.title||'',
+      'Jira': pipefyJira[id]||'',
+      'Título do Card': pipefyTitulo[id]||c.title||'',
       'Qual é o tempo de contrato?': fv('tempo de contrato'),
       'Tipo do cliente': fv('Tipo do cliente'),
       'Quantas Lojas?': fv('Lojas'),
@@ -2332,25 +2419,100 @@ let prioSortState = {c:'score', a:false}; // padrão: maior score no topo
 let _cachePrio = [];
 
 // Pontuações salvas no localStorage
+const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_d3YfhVikMw5lgEjXt14heZjVTMFdbGEnfm-kdEKt_EzDzUF_whQMxIDrBDMqL0_/exec';
+
 let prioScores = {};
-function loadScoresFromData(){
-  allData.forEach(r=>{
-    const jira=(r['Jira']||'').trim();
-    const ordem=(r['Ordem de Desenvolv.']||'').trim();
-    if(jira&&ordem&&!isNaN(ordem)&&parseInt(ordem)>0) prioScores[jira]=parseInt(ordem);
-  });
-  // Score 0 do localStorage prevalece (só admin, não vai p planilha)
-  try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{if(loc[k]===0)prioScores[k]=0;});}}catch(e){}
+// Carregar pontuações da planilha ao iniciar
+async function loadScoresFromSheet(){
+  try{
+    const r = await fetch(SCORES_PROXY + '?action=getScores');
+    const data = await r.json();
+    if(data.ok && data.scores){
+      prioScores = data.scores;
+      // Também salvar no localStorage como cache
+      try{localStorage.setItem('prio_scores', JSON.stringify(prioScores));}catch(e){}
+    }
+  }catch(e){
+    // Fallback: usar cache do localStorage
+    try{const sp=localStorage.getItem('prio_scores');if(sp)prioScores=JSON.parse(sp);}catch(e2){}
+  }
 }
+
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
-function setPrioScore(id,val){
+
+async function setPrioScore(id, val){
   if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
   savePrioScores();
   updatePrio(getPrioFiltered());
+  updatePrioCharts();
+  // Salvar na planilha (pontuação 0 não é enviada)
+  try{
+    const score = val===''||val===null||val===undefined ? '' : parseInt(val);
+    if(score !== '' && score !== 0){
+      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
+    }
+  }catch(e){
+    console.warn('Erro ao salvar pontuação na planilha:', e);
+  }
 }
 
 // ===== MULTISELECT DEV RESP. =====
 let prioDevRespSelected = new Set();
+let prioOrigSelected = new Set();
+
+function togglePrioOrig(e){
+  e.stopPropagation();
+  const dd=document.getElementById('prio-orig-dropdown');
+  dd.classList.toggle('open');
+}
+
+function updatePrioOrigLabel(){
+  const lbl=document.getElementById('prio-orig-label');
+  if(!lbl)return;
+  const s=prioOrigSelected.size;
+  lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;
+}
+function popPrioOrig(vals){
+  const dd=document.getElementById('prio-orig-dropdown');
+  if(!dd)return;
+  const todasSel=prioOrigSelected.size===0;
+  dd.innerHTML=`<div class="multiselect-option${todasSel?' checked':''}" data-val="__todas__" style="border-bottom:1px solid var(--border);margin-bottom:2px">
+      <span class="prio-orig-check" style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px;font-size:13px">${todasSel?'✓':''}</span>
+      <span>Todas</span>
+    </div>`+vals.map(v=>{
+    const sel=prioOrigSelected.has(v);
+    return `<div class="multiselect-option${sel?' checked':''}" data-val="${v}">
+      <span class="prio-orig-check" style="width:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-emerald);font-weight:700;margin-right:4px;font-size:13px">${sel?'✓':''}</span>
+      <span>${v}</span>
+    </div>`;
+  }).join('');
+  // Usar delegação de evento no dropdown inteiro — só uma vez
+  dd._prioOrigHandler && dd.removeEventListener('click', dd._prioOrigHandler);
+  dd._prioOrigHandler = function(e){
+    const opt = e.target.closest('[data-val]');
+    if(!opt) return;
+    const val = opt.dataset.val;
+    if(val==='__todas__'){
+      prioOrigSelected.clear();
+    } else {
+      if(prioOrigSelected.has(val)) prioOrigSelected.delete(val);
+      else prioOrigSelected.add(val);
+    }
+    // Atualizar ✓ visualmente sem re-renderizar
+    dd.querySelectorAll('[data-val]').forEach(el=>{
+      const v=el.dataset.val;
+      const isSel = v==='__todas__' ? prioOrigSelected.size===0 : prioOrigSelected.has(v);
+      el.querySelector('.prio-orig-check').textContent = isSel?'✓':'';
+      el.classList.toggle('checked', isSel);
+    });
+    // Atualizar label do botão
+    const lbl=document.getElementById('prio-orig-label');
+    if(lbl){const s=prioOrigSelected.size;lbl.textContent=s===0?'Todas':s===1?[...prioOrigSelected][0]:`${s} selecionadas`;}
+    updatePrio(getPrioFiltered());
+    updatePrioCharts();
+  };
+  dd.addEventListener('click', dd._prioOrigHandler);
+}
 
 function togglePrioDevResp(e){
   e.stopPropagation();
@@ -2359,11 +2521,19 @@ function togglePrioDevResp(e){
 }
 // Fechar ao clicar fora
 document.addEventListener('click', e=>{
-  const wrap = document.getElementById('prio-devresp-wrap');
-  if(wrap && !wrap.contains(e.target)){
+  const wrapDev = document.getElementById('prio-devresp-wrap');
+  if(wrapDev && !wrapDev.contains(e.target)){
     document.getElementById('prio-devresp-dropdown')?.classList.remove('open');
   }
+  // Para o Orig: só fecha se o clique foi fora E o dropdown não está sendo re-renderizado
+  const wrapOrig = document.getElementById('prio-orig-wrap');
+  const ddOrig = document.getElementById('prio-orig-dropdown');
+  if(wrapOrig && ddOrig && !wrapOrig.contains(e.target) && e.target.id !== 'prio-orig-btn'){
+    ddOrig.classList.remove('open');
+  }
 });
+
+
 function togglePrioDevRespOption(val){
   if(prioDevRespSelected.has(val)) prioDevRespSelected.delete(val);
   else prioDevRespSelected.add(val);
@@ -2393,23 +2563,7 @@ function popPrioDevResp(vals){
     </label>`).join('');
 }
 
-function getPrioFiltered(){
-  const fOrig=document.getElementById('prio-fOrig')?.value||'';
-  const fSol=document.getElementById('prio-fSol')?.value||'';
-  const fCrit=document.getElementById('prio-fCrit')?.value||'';
-  const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
-  return allPrioData.filter(r=>{
-    if(fOrig&&(r['Origem']||'')!==fOrig)return false;
-    if(fSol&&(r['Solicitante']||'')!==fSol)return false;
-    if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
-    if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;
-    if(fQ){
-      const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem'],r['Dev Resp.']].join(' ').toLowerCase();
-      if(!h.includes(fQ))return false;
-    }
-    return true;
-  });
-}
+// getPrioFiltered movida para cima com suporte a filtros de gráfico
 
 function updatePrio(data){
   // Ordenar: com score primeiro (desc), depois sem score
@@ -2424,6 +2578,7 @@ function updatePrio(data){
 
   const rcEl=document.getElementById('rc-prio');
   if(rcEl)rcEl.textContent=`${data.length} itens`;
+  updatePrioCharts();
 
   const dk='Demanda / Tarefa / Projeto';
   _cachePrio=[];
@@ -2439,7 +2594,7 @@ function updatePrio(data){
     return `<tr onclick="_openPrioFromCache(${idx})" style="cursor:pointer${score!==undefined?';background:var(--c-blue-bg)':''}" title="${score!==undefined?'Pontuação: '+score:'Sem pontuação'}">
       <td><a class="jira-link" href="https://ipedigital.atlassian.net/browse/${r['Jira']||''}" target="_blank" onclick="event.stopPropagation()">${r['Jira']||'—'}</a></td>
       <td style="font-size:11px;color:var(--text3)">${r['Ano Base']||'—'}</td>
-      <td><span class="trunc">${r[dk]||'—'}</span></td>
+      <td><span class="trunc" title="${(r[dk]||'').replace(/"/g,'&quot;')}" style="cursor:help">${r[dk]||'—'}</span></td>
       <td style="font-size:11px">${r['Qtd Lojas']||'—'}</td>
       <td style="font-size:11px;color:var(--text3)">${r['ID Contrato']||'—'}</td>
       <td>${r['Classificação']?`<span class="badge b-other" style="font-size:10px">${r['Classificação']}</span>`:'—'}</td>
@@ -2454,7 +2609,7 @@ function updatePrio(data){
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`<span style="font-size:12px;color:var(--text2)">${score!==undefined?score:'—'}</span>`}
+          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`}
       </td>
     </tr>`;
   }).join('');
@@ -2472,7 +2627,7 @@ function srtPrio(col){
 function popPrioFilters(){
   const u=(arr,k)=>[...new Set(arr.map(r=>r[k]).filter(Boolean))].sort();
   const fill=(id,vals)=>{const s=document.getElementById(id);if(!s)return;const c=s.value;s.innerHTML='<option value="">Todas</option>'+vals.map(v=>`<option ${v===c?'selected':''}>${v}</option>`).join('');};
-  fill('prio-fOrig',u(allPrioData,'Origem'));
+  popPrioOrig(u(allPrioData,'Origem'));
   fill('prio-fSol',u(allPrioData,'Solicitante'));
   fill('prio-fCrit',u(allPrioData,'Criticidade'));
   popPrioDevResp(u(allPrioData,'Dev Resp.'));
@@ -2483,6 +2638,229 @@ function popPrioFilters(){
   document.getElementById(id)?.addEventListener('change',()=>updatePrio(getPrioFiltered()));
 });
 document.getElementById('prio-fQ')?.addEventListener('input',()=>updatePrio(getPrioFiltered()));
+
+// Filtros ativos dos gráficos de priorização
+let prioChartFilter = {origem:'', priorizadas:'', apriorizadas:'', ordem:''};
+
+function clearPrioFilter(type){
+  prioChartFilter[type]='';
+  updatePrioChartPill();
+  updatePrioChartClearBtns();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
+
+function clearPrioChartFilter(){
+  prioChartFilter={origem:'',priorizadas:'',apriorizadas:'',ordem:''};
+  updatePrioChartPill();
+  updatePrioChartClearBtns();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
+
+function updatePrioChartPill(){
+  const pill=document.getElementById('fp-prio-chart');
+  const txt=document.getElementById('fp-prio-chart-txt');
+  if(!pill)return;
+  const parts=[];
+  if(prioChartFilter.origem) parts.push('Origem: '+prioChartFilter.origem);
+  if(prioChartFilter.priorizadas) parts.push('Priorizadas - Origem: '+prioChartFilter.priorizadas);
+  if(prioChartFilter.apriorizadas) parts.push('A Priorizar - Origem: '+prioChartFilter.apriorizadas);
+  if(prioChartFilter.ordem) parts.push('Ordem: '+prioChartFilter.ordem);
+  if(parts.length){pill.classList.add('show');txt.textContent='Filtro ativo — '+parts.join(' · ');}
+  else pill.classList.remove('show');
+}
+
+function updatePrioChartClearBtns(){
+  const map={origem:'clr-prio-origem',priorizadas:'clr-prio-priorizadas',apriorizadas:'clr-prio-apriorizadas',ordem:'clr-prio-ordem'};
+  Object.entries(map).forEach(([key,id])=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=prioChartFilter[key]?'inline-flex':'none';
+  });
+}
+
+function getPrioFiltered(){
+  const fSol=document.getElementById('prio-fSol')?.value||'';
+  const fCrit=document.getElementById('prio-fCrit')?.value||'';
+  const fQ=(document.getElementById('prio-fQ')?.value||'').toLowerCase();
+  return allPrioData.filter(r=>{
+    if(prioOrigSelected.size>0&&!prioOrigSelected.has(r['Origem']||''))return false;
+    if(fSol&&(r['Solicitante']||'')!==fSol)return false;
+    if(fCrit&&(r['Criticidade']||'')!==fCrit)return false;
+    if(prioDevRespSelected.size>0&&!prioDevRespSelected.has(r['Dev Resp.']||''))return false;
+    if(fQ){const h=[r['Demanda / Tarefa / Projeto'],r['Jira'],r['Solicitante'],r['ID Contrato'],r['Origem'],r['Dev Resp.']].join(' ').toLowerCase();if(!h.includes(fQ))return false;}
+    // Filtros dos gráficos
+    if(prioChartFilter.origem&&(r['Origem']||'Não informada')!==prioChartFilter.origem)return false;
+    if(prioChartFilter.priorizadas){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]===undefined)return false;
+      if((r['Origem']||'Não informada')!==prioChartFilter.priorizadas)return false;
+    }
+    if(prioChartFilter.apriorizadas){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]!==undefined)return false;
+      if((r['Origem']||'Não informada')!==prioChartFilter.apriorizadas)return false;
+    }
+    if(prioChartFilter.ordem){
+      const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+      if(prioScores[id]===undefined)return false;
+      if(String(prioScores[id])!==prioChartFilter.ordem)return false;
+    }
+    return true;
+  });
+}
+
+function updatePrioCharts(){
+  if(!allPrioData.length) return;
+  const colors = gc();
+
+  const priorizadas = allPrioData.filter(r=>{
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    return prioScores[id]!==undefined;
+  });
+  const aPriorizar = allPrioData.filter(r=>{
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    return prioScores[id]===undefined;
+  });
+
+  function buildOrigMap(arr){
+    const m={};arr.forEach(r=>{const o=r['Origem']||'Não informada';m[o]=(m[o]||0)+1;});return m;
+  }
+
+  function buildBarChart(canvasId, dataMap, badgeId, filterKey){
+    const activeFilter = prioChartFilter[filterKey];
+    const labels=Object.keys(dataMap).sort((a,b)=>dataMap[b]-dataMap[a]).slice(0,10);
+    const el=document.getElementById(badgeId);
+    if(el)el.textContent='Total: '+Object.values(dataMap).reduce((a,b)=>a+b,0);
+    if(ch[canvasId])ch[canvasId].destroy();
+    ch[canvasId]=new Chart(document.getElementById(canvasId),{
+      type:'bar',
+      data:{labels,datasets:[{
+        data:labels.map(l=>dataMap[l]),
+        backgroundColor:labels.map((l,i)=>{
+          if(activeFilter&&activeFilter===l)return colors[i%colors.length]+'EE';
+          if(activeFilter&&activeFilter!==l)return colors[i%colors.length]+'22';
+          return colors[i%colors.length]+'88';
+        }),
+        borderColor:labels.map((_,i)=>colors[i%colors.length]),
+        borderWidth:labels.map(l=>activeFilter===l?3:1.5),
+        borderRadius:5
+      }]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} demandas${activeFilter===labels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}},
+        onClick(evt,els){
+          if(!els.length)return;
+          const lbl=labels[els[0].index];
+          prioChartFilter[filterKey]=prioChartFilter[filterKey]===lbl?'':lbl;
+          updatePrioChartPill();
+          updatePrioChartClearBtns();
+          updatePrio(getPrioFiltered());
+          updatePrioCharts();
+        },
+        scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10},color:gt()},grid:{color:gbg()}},
+                y:{ticks:{font:{size:10},color:gt()},grid:{display:false}}}
+      },plugins:[numPlugin]
+    });
+  }
+
+  // Gráfico 1: Total por Origem (Backlog)
+  buildBarChart('cPrioOrigem', buildOrigMap(allPrioData), 'tot-prio-origem', 'origem');
+
+  // Gráfico 2: Priorizadas por Origem
+  buildBarChart('cPrioPriorizadas', buildOrigMap(priorizadas), 'tot-prio-priorizadas', 'priorizadas');
+
+  // Gráfico 3: A Priorizar por Origem
+  buildBarChart('cPrioAPriorizar', buildOrigMap(aPriorizar), 'tot-prio-apriorizadas', 'apriorizadas');
+
+  // Gráfico 4: Ordem de Desenvolvimento — torre vertical por pontuação
+  // Cada barra = uma pontuação (1, 2, 3...), altura = qtd de demandas com aquela pontuação
+  const activeOrdem = prioChartFilter.ordem;
+  const scoreMap={};
+  priorizadas.forEach(r=>{
+    const id=r['Jira']||r['ID Contrato']||r['Demanda / Tarefa / Projeto'];
+    const score=prioScores[id];
+    if(score===undefined)return;
+    const key=String(score);
+    scoreMap[key]=(scoreMap[key]||0)+1;
+  });
+  // Ordenar por pontuação numérica crescente
+  const scoreLabels=Object.keys(scoreMap).sort((a,b)=>Number(a)-Number(b));
+  const elOrdem=document.getElementById('tot-prio-ordem');
+  if(elOrdem)elOrdem.textContent='Total: '+priorizadas.length;
+  if(ch['cPrioOrdem'])ch['cPrioOrdem'].destroy();
+  ch['cPrioOrdem']=new Chart(document.getElementById('cPrioOrdem'),{
+    type:'bar',
+    data:{labels:scoreLabels.map(l=>'Pontuação '+l),datasets:[{
+      data:scoreLabels.map(l=>scoreMap[l]),
+      backgroundColor:scoreLabels.map((l,i)=>{
+        if(activeOrdem&&activeOrdem===l)return colors[i%colors.length]+'EE';
+        if(activeOrdem&&activeOrdem!==l)return colors[i%colors.length]+'22';
+        return colors[i%colors.length]+'99';
+      }),
+      borderColor:scoreLabels.map((_,i)=>colors[i%colors.length]),
+      borderWidth:scoreLabels.map(l=>activeOrdem===l?3:1.5),
+      borderRadius:6
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} demanda${ctx.parsed.y!==1?'s':''} com pontuação ${scoreLabels[ctx.dataIndex]}${activeOrdem===scoreLabels[ctx.dataIndex]?' ✓ filtro ativo':' (clique para filtrar)'}`}}
+      },
+      onClick(evt,els){
+        if(!els.length)return;
+        const lbl=scoreLabels[els[0].index];
+        prioChartFilter.ordem=prioChartFilter.ordem===lbl?'':lbl;
+        updatePrioChartPill();
+        updatePrioChartClearBtns();
+        updatePrio(getPrioFiltered());
+        updatePrioCharts();
+      },
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11},color:gt()},grid:{color:gbg()},title:{display:true,text:'Qtd de Demandas',color:gt(),font:{size:10}}},
+        x:{ticks:{font:{size:10},color:gt()},grid:{display:false}}
+      }
+    },plugins:[numPlugin]
+  });
+}
+
+function exportPrioXLSX(){
+  const data = getPrioFiltered();
+  if(!data.length){alert('Nenhum dado para exportar.');return;}
+  const dk='Demanda / Tarefa / Projeto';
+  const rows = data.map(r=>{
+    const id=r['Jira']||r['ID Contrato']||r[dk];
+    const score=prioScores[id];
+    // Buscar sugestão e afeta no allTriagem
+    const t=allTriagem.find(tr=>
+      (tr['Jira']&&tr['Jira']===r['Jira'])||
+      (tr['ID']&&tr['ID']===r['ID Contrato'])||
+      (tr['Código Pipe']&&tr['Código Pipe']===r['Código Pipe'])
+    );
+    return {
+      'Jira': r['Jira']||'',
+      'Ano Base': r['Ano Base']||'',
+      'Demanda / Tarefa / Projeto': r[dk]||'',
+      'Qtd Lojas': r['Qtd Lojas']||'',
+      'ID Contrato': r['ID Contrato']||'',
+      'Classificação': r['Classificação']||'',
+      'Origem': r['Origem']||'',
+      'Solicitante': r['Solicitante']||'',
+      'Esforço': r['Esforço']||'',
+      'Criticidade': r['Criticidade']||'',
+      'Status': r['Status']||'',
+      'Ordem de Desenvolv.': r['Ordem de Desenvolv.']||'',
+      'Pontuação': score!==undefined?score:'',
+      'Sugestão de Melhoria': (r['Registre a sugestão de melhoria']||t?.['Registre a sugestão de melhoria']||''),
+      'Como isso afeta o uso do sistema': (r['Como isso afeta o uso do sistema?']||t?.['Como isso afeta o uso do sistema?']||''),
+    };
+  });
+  const cols=['Jira','Ano Base','Demanda / Tarefa / Projeto','Qtd Lojas','ID Contrato','Classificação','Origem','Solicitante','Esforço','Criticidade','Status','Ordem de Desenvolv.','Pontuação','Sugestão de Melhoria','Como isso afeta o uso do sistema'];
+  const ws=XLSX.utils.json_to_sheet(rows,{header:cols});
+  ws['!cols']=[{wch:12},{wch:8},{wch:40},{wch:10},{wch:14},{wch:18},{wch:20},{wch:20},{wch:10},{wch:14},{wch:20},{wch:24},{wch:10},{wch:50},{wch:50}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Backlog e A Fazer');
+  XLSX.writeFile(wb,'Priorizacao_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
+}
 
 async function loadData(){
   document.querySelectorAll('.btn').forEach(b=>{if(b.onclick?.toString().includes('loadData')||b.getAttribute('onclick')?.includes('loadData')){b.textContent='↻ Atualizando...';b.disabled=true;}});
@@ -2495,10 +2873,12 @@ async function loadData(){
     // Atualizar filtros dos dropdowns SEM resetar seleção atual
     popF(allData,allTriagem);
     // Dados de priorização: Backlog e A Fazer
-    allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return u.includes('BACKLOG')||u.includes('FAZER');});
-    loadScoresFromData();
+    allPrioData=allData.filter(r=>{const u=(r['Status']||'').toUpperCase();return !u.includes('FEITO')&&!u.includes('DONE')&&!u.includes('PRODU');});
     popPrioFilters();
+    // Carregar pontuações da planilha e depois atualizar
+    await loadScoresFromSheet();
     updatePrio(getPrioFiltered());
+    updatePrioCharts();
     const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.querySelectorAll('[id^="lu"]').forEach(el=>el.textContent=`Atualizado às ${now}`);
     document.getElementById('err1').style.display='none';

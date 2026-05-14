@@ -794,7 +794,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 
   <div class="table-card">
     <div class="tcard-header"><div class="tcard-title">Devolutiva das Negativas</div><span class="tcard-count" id="rc-inv"></span></div>
-    <div class="tw" style="max-height:320px;overflow-y:auto"><table>
+    <div class="tw" style="max-height:640px;overflow-y:auto"><table>
       <thead><tr>
         <th>Pipefy</th><th>Colab</th><th>ID</th><th>Cliente</th>
         <th>Status</th><th>Sugestão</th><th>Devolutiva ao Analista</th>
@@ -2427,7 +2427,8 @@ let prioScores = {};
 // Carregar pontuações da planilha ao iniciar
 async function loadScoresFromSheet(){
   try{
-    const r = await fetch(SCORES_PROXY + '?action=getScores');
+    const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(SCORES_PROXY + '?action=getScores');
+    const r = await fetch(proxyUrl);
     const data = await r.json();
     if(data.ok && data.scores){
       prioScores = data.scores;
@@ -2451,7 +2452,8 @@ async function setPrioScore(id, val){
   try{
     const score = val===''||val===null||val===undefined ? '' : parseInt(val);
     if(score !== '' && score !== 0){
-      await fetch(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
+      const setUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(`${SCORES_PROXY}?action=setScore&jira=${encodeURIComponent(id)}&score=${score}`);
+      await fetch(setUrl);
     }
   }catch(e){
     console.warn('Erro ao salvar pontuação na planilha:', e);

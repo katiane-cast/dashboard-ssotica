@@ -162,9 +162,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .kpi-card.kpi-active { border-width: 2px; }
 
 .kpi-card .kpi-icon {
-  width: 34px; height: 34px; border-radius: 8px;
+  width: 38px; height: 38px; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; margin-bottom: 10px;
+  font-size: 20px; margin: 0 auto 10px auto;
 }
 .kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
 .kpi-value { font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -.02em; }
@@ -596,19 +596,19 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub" id="kv-sub-total">demandas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-total" style="width:100%"></div></div>
     </div>
-    <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
-      <div class="kpi-icon">⏳</div>
-      <div class="kpi-label">Em Fila <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
-      <div class="kpi-value" id="kv-fila">—</div>
-      <div class="kpi-sub">próximas a fazer</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
-    </div>
     <div class="kpi-card kpi-emerald" id="kv-c-entregue" onclick="fKpi('viaveis','entregue')">
       <div class="kpi-icon">✅</div>
       <div class="kpi-label">Entregues <span style="font-size:8px;font-weight:400;color:var(--c-blue);background:var(--c-blue-bg);padding:1px 4px;border-radius:3px;white-space:nowrap;margin-left:2px" id="badge-ano">por ano</span></div>
       <div class="kpi-value" id="kv-entregue">—</div>
       <div class="kpi-sub" id="kv-sub-entregue">em produção</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-entregue"></div></div>
+    </div>
+    <div class="kpi-card kpi-amber" id="kv-c-fila" onclick="fKpi('viaveis','fila')">
+      <div class="kpi-icon">⏳</div>
+      <div class="kpi-label">Em Fila <span style="font-size:8px;font-weight:400;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:3px;border:0.5px solid var(--border2);white-space:nowrap;margin-left:2px">Cen. Atual</span></div>
+      <div class="kpi-value" id="kv-fila">—</div>
+      <div class="kpi-sub">próximas a fazer</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kv-bar-fila"></div></div>
     </div>
     <div class="kpi-card kpi-teal" id="kv-c-backlog" onclick="fKpi('viaveis','backlog')">
       <div class="kpi-icon">📦</div>
@@ -1614,7 +1614,7 @@ function updateP1(data){
    // Atualizar badges de ano nos cards Total e Entregues
    const badgeAnoTxt=yearFilter&&yearFilter!=='all'?yearFilter:'Todos os Anos';
    document.querySelectorAll('#badge-ano').forEach(el=>{el.textContent=badgeAnoTxt;});
-   const _kvT=document.getElementById('kv-total');if(_kvT)_kvT.textContent=total+(total!==totalAll?' /'+totalAll:'');
+   const _kvT=document.getElementById('kv-total');if(_kvT)_kvT.textContent=total;
    document.getElementById('kv-total')?.closest('.kpi-card')?.querySelector('.kpi-sub')&&(document.getElementById('kv-total').closest('.kpi-card').querySelector('.kpi-sub').textContent='demandas'+anoSuffix);
    document.getElementById('kv-fila')&&(document.getElementById('kv-fila').textContent=nFila);
    document.getElementById('kv-entregue')&&(document.getElementById('kv-entregue').textContent=nEnt);

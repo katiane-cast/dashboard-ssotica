@@ -2424,13 +2424,18 @@ const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_
 let prioScores = {};
 // Ler pontuações da coluna Q da planilha — visível para todos
 function loadScoresFromData(){
+  // Todos leem da planilha — coluna Q (Ordem de Desenvolv.)
+  // Número = pontuação; texto = apenas tooltip (não vira pontuação)
   allData.forEach(r=>{
     const jira=(r['Jira']||'').trim();
     const ordem=(r['Ordem de Desenvolv.']||'').trim();
-    if(jira&&ordem&&!isNaN(ordem)) prioScores[jira]=parseInt(ordem);
+    if(!jira||!ordem)return;
+    if(!isNaN(ordem))prioScores[jira]=parseInt(ordem);
   });
-  // Score 0 do localStorage prevalece (só admin, não vai p planilha)
-  try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{if(loc[k]===0)prioScores[k]=0;});}}catch(e){}
+  // Admin sobrescreve com localStorage (pontuação 0 local)
+  if(isAdmin()){
+    try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{prioScores[k]=loc[k];});}}catch(e){}
+  }
 }
 
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}

@@ -769,17 +769,11 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="kpi-sub">devolvidas</div>
       <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-dev"></div></div>
     </div>
-    <div class="kpi-card kpi-emerald" id="ki-c-via" onclick="fKpi('inviaveis','Viável')">
-      <div class="kpi-icon">✔️</div>
-      <div class="kpi-label">Viáveis</div><div class="kpi-value" id="ki-viavel">—</div>
-      <div class="kpi-sub">aprovadas</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-via"></div></div>
-    </div>
-    <div class="kpi-card kpi-amber" id="ki-c-parc" onclick="fKpi('inviaveis','Parcialmente')">
-      <div class="kpi-icon">🔀</div>
-      <div class="kpi-label">Parc. Viáveis</div><div class="kpi-value" id="ki-parcial">—</div>
-      <div class="kpi-sub">parcialmente</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-parc"></div></div>
+    <div class="kpi-card kpi-violet" id="ki-c-dup" onclick="fKpi('inviaveis','Duplicada')">
+      <div class="kpi-icon">🔁</div>
+      <div class="kpi-label">Duplicadas</div><div class="kpi-value" id="ki-duplicada">—</div>
+      <div class="kpi-sub">duplicadas</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="ki-bar-dup"></div></div>
     </div>
     <div class="kpi-card kpi-teal" id="ki-c-painel" onclick="fKpi('inviaveis','Painel')">
       <div class="kpi-icon">📌</div>
@@ -1374,6 +1368,9 @@ function getTF(){
   const fC=document.getElementById('i-fC').value,fQ=document.getElementById('i-fQ').value.toLowerCase();
   const kpi=KF.inviaveis;
   return allTriagem.filter(r=>{
+    const su=(r['Status']||'').toUpperCase();
+    if((su.includes('VIÁV')||su.includes('VIAV'))&&!su.includes('INVI')&&!su.includes('PARCIAL'))return false;
+    if(su.includes('PARCIAL'))return false;
     if(fT&&r['Triagem']!==fT)return false;
     if(fS&&r['Status']!==fS)return false;
     if(fC&&r['Colab']!==fC)return false;
@@ -1780,23 +1777,26 @@ function updateP1(data){
 
 // ===== PAGE 2 =====
 function updateP2(data){
-  const tot=allTriagem.length;
-  const nInv=allTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('invi')).length;
-  const nDev=allTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('devolv')).length;
-  const nVia=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return(s.includes('VIÁV')||s.includes('VIAV'))&&!s.includes('INVI')&&!s.includes('PARCIAL');}).length;
-  const nParc=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PARCIAL');}).length;
-  const nPainel=allTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PAINEL')||s.includes('ESTRATÉG')||s.includes('ESTRATEG');}).length;
+  const baseTriagem=allTriagem.filter(r=>{
+    const su=(r['Status']||'').toUpperCase();
+    if((su.includes('VIÁV')||su.includes('VIAV'))&&!su.includes('INVI')&&!su.includes('PARCIAL'))return false;
+    if(su.includes('PARCIAL'))return false;
+    return true;
+  });
+  const tot=baseTriagem.length;
+  const nInv=baseTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('invi')).length;
+  const nDev=baseTriagem.filter(r=>(r['Status']||'').toLowerCase().includes('devolv')).length;
+  const nDup=baseTriagem.filter(r=>(r['Status']||'').toUpperCase().includes('DUPLIC')).length;
+  const nPainel=baseTriagem.filter(r=>{const s=(r['Status']||'').toUpperCase();return s.includes('PAINEL')||s.includes('ESTRATÉG')||s.includes('ESTRATEG');}).length;
   document.getElementById('ki-total')&&(document.getElementById('ki-total').textContent=tot||'—');
   document.getElementById('ki-inviavel')&&(document.getElementById('ki-inviavel').textContent=nInv||'—');
   document.getElementById('ki-devolvido')&&(document.getElementById('ki-devolvido').textContent=nDev||'—');
-  document.getElementById('ki-viavel')&&(document.getElementById('ki-viavel').textContent=nVia||'—');
-  document.getElementById('ki-parcial')&&(document.getElementById('ki-parcial').textContent=nParc||'—');
+  document.getElementById('ki-duplicada')&&(document.getElementById('ki-duplicada').textContent=nDup||'—');
   document.getElementById('ki-painel')&&(document.getElementById('ki-painel').textContent=nPainel||'—');
   if(tot>0){
     document.getElementById('ki-bar-inv').style.cssText=`width:${Math.round(nInv/tot*100)}%;background:var(--c-rose)`;
     document.getElementById('ki-bar-dev').style.cssText=`width:${Math.round(nDev/tot*100)}%;background:var(--c-violet)`;
-    document.getElementById('ki-bar-via').style.cssText=`width:${Math.round(nVia/tot*100)}%;background:var(--c-emerald)`;
-    document.getElementById('ki-bar-parc').style.cssText=`width:${Math.round(nParc/tot*100)}%;background:var(--c-amber)`;
+    document.getElementById('ki-bar-dup').style.cssText=`width:${Math.round(nDup/tot*100)}%;background:var(--c-violet)`;
     document.getElementById('ki-bar-painel').style.cssText=`width:${Math.round(nPainel/tot*100)}%;background:var(--c-teal)`;
   }
   document.getElementById('rc-inv')&&(document.getElementById('rc-inv').textContent=`${data.length} itens`);
@@ -2449,6 +2449,12 @@ function loadScoresFromData(){
   }
 }
 function savePrioScores(){try{localStorage.setItem('prio_scores',JSON.stringify(prioScores));}catch(e){}}
+function setPrioScore(id,val){
+  if(val===''||val===null||val===undefined){delete prioScores[id];}else{prioScores[id]=parseInt(val);}
+  savePrioScores();
+  updatePrio(getPrioFiltered());
+  updatePrioCharts();
+}
 
 
 // ===== MULTISELECT DEV RESP. =====

@@ -2603,13 +2603,15 @@ function updatePrio(data){
       <td style="font-size:11px">${r['Esforço']||'—'}</td>
       <td>${r['Criticidade']?cBadge(r['Criticidade']):'—'}</td>
       <td>${sBadgePrio(r['Status'])}</td>
-      <td onclick="event.stopPropagation()" style="min-width:90px">
+      <td onclick="event.stopPropagation()" style="min-width:90px" title="${score===0?(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;'):''}">
         ${isAdmin()?`<select onchange="setPrioScore('${id}',this.value)"
             style="font-size:11px;height:26px;padding:0 4px;border-radius:5px;width:100%"
-            title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
+            title="${score===0?(r['Ordem de Desenvolv.']||''):score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`}
+          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue);${score===0?'cursor:help;text-decoration:underline dotted':''}"
+            title="${score===0?(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;'):''}"
+          >${score!==undefined?score:'—'}</span>`}
       </td>
     </tr>`;
   }).join('');

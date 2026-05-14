@@ -2427,7 +2427,7 @@ function loadScoresFromData(){
   allData.forEach(r=>{
     const jira=(r['Jira']||'').trim();
     const ordem=(r['Ordem de Desenvolv.']||'').trim();
-    if(jira&&ordem&&!isNaN(ordem)&&parseInt(ordem)>0) prioScores[jira]=parseInt(ordem);
+    if(jira&&ordem&&!isNaN(ordem)) prioScores[jira]=parseInt(ordem);
   });
   // Score 0 do localStorage prevalece (só admin, não vai p planilha)
   try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{if(loc[k]===0)prioScores[k]=0;});}}catch(e){}

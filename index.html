@@ -2424,15 +2424,19 @@ const SCORES_PROXY = 'https://script.google.com/a/macros/ipe.digital/s/AKfycbwt_
 let prioScores = {};
 // Ler pontuações da coluna Q da planilha — visível para todos
 function loadScoresFromData(){
-  // Todos leem da planilha — coluna Q (Ordem de Desenvolv.)
-  // Número = pontuação; texto = apenas tooltip (não vira pontuação)
+  // Ler pontuações da coluna Q para todos
+  // Número = pontuação real | Texto (não número) = pontuação 0 (aparece como texto)
   allData.forEach(r=>{
     const jira=(r['Jira']||'').trim();
     const ordem=(r['Ordem de Desenvolv.']||'').trim();
     if(!jira||!ordem)return;
-    if(!isNaN(ordem))prioScores[jira]=parseInt(ordem);
+    if(!isNaN(ordem)){
+      prioScores[jira]=parseInt(ordem); // número → pontuação
+    } else {
+      prioScores[jira]=0; // texto → pontuação 0 (texto fica em r['Ordem de Desenvolv.'])
+    }
   });
-  // Admin sobrescreve com localStorage (pontuação 0 local)
+  // Admin sobrescreve com localStorage
   if(isAdmin()){
     try{const sp=localStorage.getItem('prio_scores');if(sp){const loc=JSON.parse(sp);Object.keys(loc).forEach(k=>{prioScores[k]=loc[k];});}}catch(e){}
   }
@@ -2609,7 +2613,10 @@ function updatePrio(data){
             title="${score!==undefined?'Pontuação: '+score:'Pontuar demanda'}">
             <option value="" ${score===undefined?'selected':''}>— pontuar —</option>
             ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(i=>`<option value="${i}" ${score===i?'selected':''}>${i}</option>`).join('')}
-          </select>`:`<span style="font-size:12px;font-weight:600;color:var(--c-blue);${score===0?'cursor:help;text-decoration:underline dotted':''}" title="${score===0?(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;'):''}">${score!==undefined?score:'—'}</span>`}
+          </select>`:`${score===0
+  ? `<span style="font-size:11px;color:var(--text2);font-style:italic;display:block;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(r['Ordem de Desenvolv.']||'').replace(/"/g,'&quot;')}">${r['Ordem de Desenvolv.']||'—'}</span>`
+  : `<span style="font-size:12px;font-weight:600;color:var(--c-blue)">${score!==undefined?score:'—'}</span>`
+}`}
       </td>
     </tr>`;
   }).join('');
